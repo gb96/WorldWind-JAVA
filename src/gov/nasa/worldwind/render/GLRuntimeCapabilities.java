@@ -4,9 +4,13 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWUtil;
 
-import javax.media.opengl.*;
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GLContext;
 
 /**
  * GLRuntimeCapabilities describes the GL capabilities supported by the current GL runtime. It provides the caller with
@@ -16,13 +20,13 @@ import javax.media.opengl.*;
  * For each GL feature, there are three key pieces of information available through GLRuntimeCapabilities: <ul> <li>The
  * property <code>is[Feature]Available</code> defines whether or not the feature is supported by the current GL runtime.
  * This is an attribute of the GL runtime, and is typically configured automatically by a call to {@link
- * #initialize(javax.media.opengl.GLContext)}.</li> <li>The property <code>is[Feature]Enabled</code> defines whether or
+ * #initialize(GLContext)}.</li> <li>The property <code>is[Feature]Enabled</code> defines whether or
  * not this feature should be used, and must be configured by the caller. </li> <li>The convenience method
  * <code>isUse[Feature]()</code>. This returns whether or not the feature is available and is enabled for use (it is
  * simply a conjunction of the "available" and "enabled" properties).</li> </ul>
  * <p/>
  * GLRuntimeCapabilities is designed to automatically configure itself with information about the current GL runtime. To
- * invoke this behavior, call {@link #initialize(javax.media.opengl.GLContext)} with a valid GLContext at the beginning
+ * invoke this behavior, call {@link #initialize(GLContext)} with a valid GLContext at the beginning
  * of each rendering pass.
  *
  * @author dcollins
@@ -48,7 +52,7 @@ public class GLRuntimeCapabilities
      * Constructs a new GLAtttributes, enabling framebuffer objects and anisotropic texture filtering, and enabling
      * vertex buffer objects on all configurations except Mac OS. Note that these properties are marked as enabled, but
      * they are not known to be available yet. All other properties are set to default values which may be set
-     * explicitly by the caller, or implicitly by calling {@link #initialize(javax.media.opengl.GLContext)}.
+     * explicitly by the caller, or implicitly by calling {@link #initialize(GLContext)}.
      */
     public GLRuntimeCapabilities()
     {
@@ -81,7 +85,7 @@ public class GLRuntimeCapabilities
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = glContext.getGL();
+        GL2 gl = glContext.getGL().getGL2();
 
         if (this.glVersion < 1.0)
         {
@@ -111,7 +115,7 @@ public class GLRuntimeCapabilities
                 // The maxAnisotropy value can be any real value. A value less than 2.0 indicates that the graphics
                 // context does not support texture anisotropy.
                 double[] params = new double[1];
-                glContext.getGL().glGetDoublev(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, params, 0);
+                glContext.getGL().getGL2().glGetDoublev(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, params, 0);
                 this.maxTextureAnisotropy = params[0];
             }
         }
@@ -119,7 +123,7 @@ public class GLRuntimeCapabilities
         if (this.numTextureUnits == 0)
         {
             int[] params = new int[1];
-            gl.glGetIntegerv(GL.GL_MAX_TEXTURE_UNITS, params, 0);
+            gl.glGetIntegerv(GL2ES1.GL_MAX_TEXTURE_UNITS, params, 0);
             this.numTextureUnits = params[0];
         }
 

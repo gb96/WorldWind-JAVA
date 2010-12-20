@@ -5,13 +5,23 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render.airspaces;
 
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.GeometryBuilder;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.media.opengl.GL;
-import java.util.*;
+import javax.media.opengl.GL2;
 
 /**
  * @author lado
@@ -464,12 +474,12 @@ public class Box extends AbstractAirspace
         this.setExpiryTime(this.nextExpiryTime(dc, terrainConformant));
         this.clearElevationMap();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         boolean useCullFace = this.forceCullFace || !enableCaps[0] || !enableCaps[1];
         if (useCullFace)
         {
-            gl.glPushAttrib(GL.GL_POLYGON_BIT);
+            gl.glPushAttrib(GL2.GL_POLYGON_BIT);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glFrontFace(GL.GL_CCW);
         }

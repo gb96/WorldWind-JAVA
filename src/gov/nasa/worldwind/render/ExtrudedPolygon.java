@@ -7,27 +7,59 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Box;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Triangle;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
-import gov.nasa.worldwind.pick.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.terrain.Terrain;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.GLUTessellatorSupport;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.WWMath;
+
+import java.awt.Color;
+import java.awt.Point;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
 import javax.media.opengl.glu.GLU;
-import javax.xml.stream.*;
-import java.awt.*;
-import java.io.*;
-import java.net.URL;
-import java.nio.*;
-import java.util.*;
-import java.util.List;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * A multi-sided 3D shell formed by a base polygon in latitude and longitude extruded from the terrain to either a
@@ -612,7 +644,7 @@ public class ExtrudedPolygon extends AVListImpl
         // Determine whether the tex-coord list needs to be closed.
         boolean closeIt = texCoords[0] != texCoords[texCoordCount - 2] || texCoords[1] != texCoords[texCoordCount - 1];
 
-        this.boundarySet.capTextureCoordsBuffer = BufferUtil.newFloatBuffer(2 * (texCoordCount + (closeIt ? 1 : 0)));
+        this.boundarySet.capTextureCoordsBuffer = Buffers.newDirectFloatBuffer(2 * (texCoordCount + (closeIt ? 1 : 0)));
         for (int i = 0; i < 2 * texCoordCount; i++)
         {
             this.boundarySet.capTextureCoordsBuffer.put(texCoords[i]);
@@ -1625,14 +1657,14 @@ public class ExtrudedPolygon extends AVListImpl
      */
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.BEogsh.clear();
 
-        int attrMask = GL.GL_CURRENT_BIT | GL.GL_DEPTH_BUFFER_BIT
-            | GL.GL_LINE_BIT | GL.GL_HINT_BIT // for outline
-            | GL.GL_POLYGON_BIT // for interior
+        int attrMask = GL2.GL_CURRENT_BIT | GL.GL_DEPTH_BUFFER_BIT
+            | GL2.GL_LINE_BIT | GL2.GL_HINT_BIT // for outline
+            | GL2.GL_POLYGON_BIT // for interior
             | GL.GL_COLOR_BUFFER_BIT
-            | GL.GL_TEXTURE_BIT | GL.GL_TRANSFORM_BIT; // for texture
+            | GL2.GL_TEXTURE_BIT | GL2.GL_TRANSFORM_BIT; // for texture
 
         this.BEogsh.pushAttrib(gl, attrMask);
 
@@ -1652,8 +1684,8 @@ public class ExtrudedPolygon extends AVListImpl
 
         gl.glDisable(GL.GL_CULL_FACE);
 
-        this.BEogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
+        this.BEogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
 
         dc.getView().pushReferenceCenter(dc, this.boundarySet.referencePoint);
     }
@@ -1728,19 +1760,19 @@ public class ExtrudedPolygon extends AVListImpl
      */
     protected void doDrawOrderedRenderable(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         dc.getView().setReferenceCenter(dc, this.boundarySet.referencePoint);
 
         if (this.mustApplyLighting(dc))
         {
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glEnable(GLLightingFunc.GL_LIGHTING);
+            gl.glEnableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
         }
         else
         {
-            gl.glDisable(GL.GL_LIGHTING);
-            gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glDisable(GLLightingFunc.GL_LIGHTING);
+            gl.glDisableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
         }
 
         if (dc.isPickingMode())
@@ -1770,7 +1802,7 @@ public class ExtrudedPolygon extends AVListImpl
         if (!activeAttrs.isDrawInterior())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
@@ -1800,12 +1832,12 @@ public class ExtrudedPolygon extends AVListImpl
 
             gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, this.boundarySet.capTextureCoordsBuffer.rewind());
             dc.getGL().glEnable(GL.GL_TEXTURE_2D);
-            gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
         }
         else
         {
             dc.getGL().glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glDisableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
         }
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.boundarySet.capVertexBuffer.rewind());
@@ -1832,7 +1864,7 @@ public class ExtrudedPolygon extends AVListImpl
         if (!activeAttrs.isDrawOutline())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
@@ -1862,7 +1894,7 @@ public class ExtrudedPolygon extends AVListImpl
 
         if (activeAttrs.getOutlineStippleFactor() > 0)
         {
-            gl.glEnable(GL.GL_LINE_STIPPLE);
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
             gl.glLineStipple(activeAttrs.getOutlineStippleFactor(), activeAttrs.getOutlineStipplePattern());
         }
 
@@ -1888,7 +1920,7 @@ public class ExtrudedPolygon extends AVListImpl
      */
     protected void drawSideInteriors(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
@@ -1917,13 +1949,13 @@ public class ExtrudedPolygon extends AVListImpl
             if (!dc.isPickingMode() && boundary.sideTextureCoords != null)
             {
                 dc.getGL().glEnable(GL.GL_TEXTURE_2D);
-                gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
                 gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, boundary.sideTextureCoords.rewind());
             }
             else
             {
                 dc.getGL().glDisable(GL.GL_TEXTURE_2D);
-                gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                gl.glDisableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
             }
 
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, boundary.sideVertexBuffer.rewind());
@@ -1951,7 +1983,7 @@ public class ExtrudedPolygon extends AVListImpl
      */
     protected void drawSideEdges(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         ShapeAttributes activeAttrs = this.getActiveSideAttributes();
 
@@ -1983,7 +2015,7 @@ public class ExtrudedPolygon extends AVListImpl
 
         if (activeAttrs.getOutlineStippleFactor() > 0)
         {
-            gl.glEnable(GL.GL_LINE_STIPPLE);
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
             gl.glLineStipple(activeAttrs.getOutlineStippleFactor(), activeAttrs.getOutlineStipplePattern());
         }
 
@@ -2173,7 +2205,7 @@ public class ExtrudedPolygon extends AVListImpl
         if (boundarySet.sideVertexBuffer != null && boundarySet.sideVertexBuffer.capacity() >= vertexCoordCount)
             boundarySet.sideVertexBuffer.clear();
         else
-            boundarySet.sideVertexBuffer = BufferUtil.newFloatBuffer(vertexCoordCount);
+            boundarySet.sideVertexBuffer = Buffers.newDirectFloatBuffer(vertexCoordCount);
 
         // Create individual buffer slices for each boundary.
         for (ExtrudedBoundaryInfo boundary : boundarySet)
@@ -2192,7 +2224,7 @@ public class ExtrudedPolygon extends AVListImpl
         if (boundarySet.sideNormalBuffer != null && boundarySet.sideNormalBuffer.capacity() >= vertexCoordCount)
             boundarySet.sideNormalBuffer.clear();
         else
-            boundarySet.sideNormalBuffer = BufferUtil.newFloatBuffer(vertexCoordCount);
+            boundarySet.sideNormalBuffer = Buffers.newDirectFloatBuffer(vertexCoordCount);
 
         // Create individual buffer slices for each boundary.
         for (ExtrudedBoundaryInfo boundary : boundarySet)
@@ -2218,7 +2250,7 @@ public class ExtrudedPolygon extends AVListImpl
                 if (boundary.sideTextureCoords != null && boundary.sideTextureCoords.capacity() >= texCoordSize)
                     boundary.sideTextureCoords.clear();
                 else
-                    boundary.sideTextureCoords = BufferUtil.newFloatBuffer(texCoordSize);
+                    boundary.sideTextureCoords = Buffers.newDirectFloatBuffer(texCoordSize);
 
                 this.fillSideTexCoordBuffer(boundary.capVertices, boundary.baseVertices,
                     boundary.sideTextureCoords);
@@ -2237,7 +2269,7 @@ public class ExtrudedPolygon extends AVListImpl
         if (boundarySet.capVertexBuffer != null && boundarySet.capVertexBuffer.capacity() >= this.totalNumLocations * 3)
             boundarySet.capVertexBuffer.clear();
         else
-            boundarySet.capVertexBuffer = BufferUtil.newFloatBuffer(this.totalNumLocations * 3);
+            boundarySet.capVertexBuffer = Buffers.newDirectFloatBuffer(this.totalNumLocations * 3);
 
         // Fill the vertex buffer. Simultaneously create individual buffer slices for each boundary. These are used to
         // draw the outline.
@@ -2259,7 +2291,7 @@ public class ExtrudedPolygon extends AVListImpl
             && boundarySet.capNormalBuffer.capacity() >= this.totalNumLocations * 3)
             boundarySet.capNormalBuffer.clear();
         else
-            boundarySet.capNormalBuffer = BufferUtil.newFloatBuffer(boundarySet.capVertexBuffer.capacity());
+            boundarySet.capNormalBuffer = Buffers.newDirectFloatBuffer(boundarySet.capVertexBuffer.capacity());
 
         for (ExtrudedBoundaryInfo boundary : boundarySet)
         {
@@ -2441,7 +2473,7 @@ public class ExtrudedPolygon extends AVListImpl
             return ib;
 
         // The edges are two-point lines connecting vertex pairs.
-        ib = BufferUtil.newIntBuffer(2 * (n - 1) * 3);
+        ib = Buffers.newDirectIntBuffer(2 * (n - 1) * 3);
         for (int i = 0; i < n - 1; i++)
         {
             ib.put(i).put(i + 1);
@@ -2468,7 +2500,7 @@ public class ExtrudedPolygon extends AVListImpl
         // Compute them if not already computed. Each side is two triangles defined by one triangle strip. All edges
         // can't be combined into one tri-strip because each side may have its own texture and therefore different
         // texture coordinates.
-        ib = BufferUtil.newIntBuffer(n * 4);
+        ib = Buffers.newDirectIntBuffer(n * 4);
         for (int i = 0; i < n; i++)
         {
             ib.put(4 * i + 3).put(4 * i).put(4 * i + 2).put(4 * i + 1);
@@ -2496,7 +2528,7 @@ public class ExtrudedPolygon extends AVListImpl
 
         // The edges are two-point lines connecting vertex pairs.
 
-        ib = BufferUtil.newIntBuffer((2 * nn) * 3); // 2n each for top, bottom and corners
+        ib = Buffers.newDirectIntBuffer((2 * nn) * 3); // 2n each for top, bottom and corners
 
         // Top. Keep this first so that the top edge can be turned off independently.
         for (int i = 0; i < nn; i++)
@@ -2621,7 +2653,7 @@ public class ExtrudedPolygon extends AVListImpl
     protected void makeIndexLists(GLUTessellatorSupport.CollectIndexListsCallback cb)
     {
         if (this.capFillIndices == null || this.capFillIndices.capacity() < cb.getNumIndices())
-            this.capFillIndices = BufferUtil.newIntBuffer(cb.getNumIndices());
+            this.capFillIndices = Buffers.newDirectIntBuffer(cb.getNumIndices());
         else
             this.capFillIndices.clear();
 
@@ -2806,7 +2838,7 @@ public class ExtrudedPolygon extends AVListImpl
         for (int i = 0; i < this.primTypes.size(); i++)
         {
             IntBuffer ib = this.capFillIndexBuffers.get(i);
-//            ib = BufferUtil.newIntBuffer(4);
+//            ib = Buffers.newDirectIntBuffer(4);
 //            ib.put(4).put(1).put(2).put(3);
             ib.rewind();
             List<Intersection> ti = Triangle.intersectTriangleTypes(line, boundarySet.capVertexBuffer, ib,

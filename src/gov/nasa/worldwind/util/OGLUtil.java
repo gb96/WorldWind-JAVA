@@ -7,6 +7,11 @@ package gov.nasa.worldwind.util;
 import gov.nasa.worldwind.geom.Vec4;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GL2ES2;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
 
 /**
  * A collection of OpenGL utility methods, all static.
@@ -31,7 +36,7 @@ public class OGLUtil
      *
      * @throws IllegalArgumentException if the GL is null.
      */
-    public static void applyBlending(GL gl, boolean havePremultipliedColors)
+    public static void applyBlending(GL2 gl, boolean havePremultipliedColors)
     {
         if (gl == null)
         {
@@ -40,7 +45,7 @@ public class OGLUtil
             throw new IllegalArgumentException(message);
         }
 
-        gl.glEnable(GL.GL_ALPHA_TEST);
+        gl.glEnable(GL2ES1.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
 
         if (havePremultipliedColors)
@@ -83,7 +88,7 @@ public class OGLUtil
      * @throws IllegalArgumentException if the GL is null, if the Color is null, if the opacity is less than 0, or if
      *                                  the opacity is greater than 1.
      */
-    public static void applyColor(GL gl, java.awt.Color color, double opacity, boolean premultiplyColors)
+    public static void applyColor(GL2 gl, java.awt.Color color, double opacity, boolean premultiplyColors)
     {
         if (gl == null)
         {
@@ -133,7 +138,7 @@ public class OGLUtil
      * @throws IllegalArgumentException if the GL is null, if the Color is null, if the opacity is less than 0, or if
      *                                  the opacity is greater than 1.
      */
-    public static void applyColor(GL gl, java.awt.Color color, boolean premultiplyColors)
+    public static void applyColor(GL2 gl, java.awt.Color color, boolean premultiplyColors)
     {
         if (gl == null)
         {
@@ -174,7 +179,7 @@ public class OGLUtil
      *
      * @throws IllegalArgumentException if the GL is null.
      */
-    public static void applyLightingDirectionalFromViewer(GL gl, int light, Vec4 direction)
+    public static void applyLightingDirectionalFromViewer(GL2 gl, int light, Vec4 direction)
     {
         if (gl == null)
         {
@@ -191,15 +196,15 @@ public class OGLUtil
         float[] specular = {1f, 1f, 1f, 0f};
         float[] position = {(float) direction.x, (float) direction.y, (float) direction.z, 0.0f};
 
-        gl.glLightfv(light, GL.GL_AMBIENT, ambient, 0);
-        gl.glLightfv(light, GL.GL_DIFFUSE, diffuse, 0);
-        gl.glLightfv(light, GL.GL_SPECULAR, specular, 0);
+        gl.glLightfv(light, GLLightingFunc.GL_AMBIENT, ambient, 0);
+        gl.glLightfv(light, GLLightingFunc.GL_DIFFUSE, diffuse, 0);
+        gl.glLightfv(light, GLLightingFunc.GL_SPECULAR, specular, 0);
 
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushModelviewIdentity(gl);
         try
         {
-            gl.glLightfv(light, GL.GL_POSITION, position, 0);
+            gl.glLightfv(light, GLLightingFunc.GL_POSITION, position, 0);
         }
         finally
         {
@@ -253,71 +258,71 @@ public class OGLUtil
         {
             // Alpha pixel format.
             case GL.GL_ALPHA:
-            case GL.GL_ALPHA4:
-            case GL.GL_ALPHA8:
-            case GL.GL_ALPHA12:
-            case GL.GL_ALPHA16:
-            case GL.GL_COMPRESSED_ALPHA:
+            case GL2.GL_ALPHA4:
+            case GL2.GL_ALPHA8:
+            case GL2.GL_ALPHA12:
+            case GL2.GL_ALPHA16:
+            case GL2.GL_COMPRESSED_ALPHA:
                 return GL.GL_ALPHA;
             // Luminance pixel format.
-            case GL.GL_COMPRESSED_LUMINANCE:
+            case GL2.GL_COMPRESSED_LUMINANCE:
             case GL.GL_LUMINANCE:
-            case GL.GL_LUMINANCE4:
-            case GL.GL_LUMINANCE8:
-            case GL.GL_LUMINANCE12:
-            case GL.GL_LUMINANCE16:
-            case GL.GL_SLUMINANCE:
-            case GL.GL_SLUMINANCE8:
+            case GL2.GL_LUMINANCE4:
+            case GL2.GL_LUMINANCE8:
+            case GL2.GL_LUMINANCE12:
+            case GL2.GL_LUMINANCE16:
+            case GL2.GL_SLUMINANCE:
+            case GL2.GL_SLUMINANCE8:
                 return GL.GL_LUMINANCE;
             // Luminance-alpha pixel format.
-            case GL.GL_COMPRESSED_LUMINANCE_ALPHA:
+            case GL2.GL_COMPRESSED_LUMINANCE_ALPHA:
             case GL.GL_LUMINANCE_ALPHA:
-            case GL.GL_LUMINANCE4_ALPHA4:
-            case GL.GL_LUMINANCE6_ALPHA2:
-            case GL.GL_LUMINANCE8_ALPHA8:
-            case GL.GL_LUMINANCE12_ALPHA4:
-            case GL.GL_LUMINANCE12_ALPHA12:
-            case GL.GL_LUMINANCE16_ALPHA16:
-            case GL.GL_SLUMINANCE_ALPHA:
-            case GL.GL_SLUMINANCE8_ALPHA8:
+            case GL2.GL_LUMINANCE4_ALPHA4:
+            case GL2.GL_LUMINANCE6_ALPHA2:
+            case GL2.GL_LUMINANCE8_ALPHA8:
+            case GL2.GL_LUMINANCE12_ALPHA4:
+            case GL2.GL_LUMINANCE12_ALPHA12:
+            case GL2.GL_LUMINANCE16_ALPHA16:
+            case GL2.GL_SLUMINANCE_ALPHA:
+            case GL2.GL_SLUMINANCE8_ALPHA8:
                 return GL.GL_LUMINANCE_ALPHA;
             // Unspecified single component (red) pixel format.
-            case GL.GL_COMPRESSED_INTENSITY:
-            case GL.GL_DEPTH_COMPONENT:
+            case GL2.GL_COMPRESSED_INTENSITY:
+            case GL2ES2.GL_DEPTH_COMPONENT:
             case GL.GL_DEPTH_COMPONENT16:
             case GL.GL_DEPTH_COMPONENT24:
             case GL.GL_DEPTH_COMPONENT32:
-            case GL.GL_INTENSITY:
-            case GL.GL_INTENSITY4:
-            case GL.GL_INTENSITY8:
-            case GL.GL_INTENSITY12:
-            case GL.GL_INTENSITY16:
-                return GL.GL_RED;
+            case GL2.GL_INTENSITY:
+            case GL2.GL_INTENSITY4:
+            case GL2.GL_INTENSITY8:
+            case GL2.GL_INTENSITY12:
+            case GL2.GL_INTENSITY16:
+                return GL2GL3.GL_RED;
             // RGB pixel format.
-            case GL.GL_COMPRESSED_RGB:
-            case GL.GL_R3_G3_B2:
+            case GL2GL3.GL_COMPRESSED_RGB:
+            case GL2GL3.GL_R3_G3_B2:
             case GL.GL_RGB:
-            case GL.GL_RGB4:
-            case GL.GL_RGB5:
+            case GL2GL3.GL_RGB4:
+            case GL2GL3.GL_RGB5:
             case GL.GL_RGB8:
-            case GL.GL_RGB10:
-            case GL.GL_RGB12:
-            case GL.GL_RGB16:
-            case GL.GL_SRGB:
-            case GL.GL_SRGB8:
+            case GL2GL3.GL_RGB10:
+            case GL2GL3.GL_RGB12:
+            case GL2GL3.GL_RGB16:
+            case GL2GL3.GL_SRGB:
+            case GL2GL3.GL_SRGB8:
                 return GL.GL_RGB;
             // RGBA pixel format.
-            case GL.GL_COMPRESSED_RGBA:
+            case GL2GL3.GL_COMPRESSED_RGBA:
             case GL.GL_RGBA:
-            case GL.GL_RGBA2:
+            case GL2GL3.GL_RGBA2:
             case GL.GL_RGBA4:
             case GL.GL_RGB5_A1:
             case GL.GL_RGBA8:
-            case GL.GL_RGB10_A2:
-            case GL.GL_RGBA12:
-            case GL.GL_RGBA16:
-            case GL.GL_SRGB_ALPHA:
-            case GL.GL_SRGB8_ALPHA8:
+            case GL2GL3.GL_RGB10_A2:
+            case GL2GL3.GL_RGBA12:
+            case GL2GL3.GL_RGBA16:
+            case GL2GL3.GL_SRGB_ALPHA:
+            case GL2GL3.GL_SRGB8_ALPHA8:
                 return GL.GL_RGBA;
             default:
                 return 0;
@@ -405,80 +410,80 @@ public class OGLUtil
         switch (internalFormat)
         {
             // 4 bits per pixel.
-            case GL.GL_ALPHA4:
-            case GL.GL_LUMINANCE4:
-            case GL.GL_INTENSITY4:
+            case GL2.GL_ALPHA4:
+            case GL2.GL_LUMINANCE4:
+            case GL2.GL_INTENSITY4:
                 return numPixels / 2;
             // 8 bits per pixel.
             case GL.GL_ALPHA:
-            case GL.GL_ALPHA8:
+            case GL2.GL_ALPHA8:
             case GL.GL_LUMINANCE:
-            case GL.GL_LUMINANCE8:
-            case GL.GL_LUMINANCE4_ALPHA4:
-            case GL.GL_LUMINANCE6_ALPHA2:
-            case GL.GL_INTENSITY:
-            case GL.GL_INTENSITY8:
-            case GL.GL_R3_G3_B2:
-            case GL.GL_RGBA2:
-            case GL.GL_SLUMINANCE:
-            case GL.GL_SLUMINANCE8:
+            case GL2.GL_LUMINANCE8:
+            case GL2.GL_LUMINANCE4_ALPHA4:
+            case GL2.GL_LUMINANCE6_ALPHA2:
+            case GL2.GL_INTENSITY:
+            case GL2.GL_INTENSITY8:
+            case GL2GL3.GL_R3_G3_B2:
+            case GL2GL3.GL_RGBA2:
+            case GL2.GL_SLUMINANCE:
+            case GL2.GL_SLUMINANCE8:
                 return numPixels;
             // 12 bits per pixel.
-            case GL.GL_ALPHA12:
-            case GL.GL_LUMINANCE12:
-            case GL.GL_INTENSITY12:
-            case GL.GL_RGB4:
+            case GL2.GL_ALPHA12:
+            case GL2.GL_LUMINANCE12:
+            case GL2.GL_INTENSITY12:
+            case GL2GL3.GL_RGB4:
                 return 12 * numPixels / 8;
             // 16 bits per pixel.
-            case GL.GL_ALPHA16:
+            case GL2.GL_ALPHA16:
             case GL.GL_DEPTH_COMPONENT16:
-            case GL.GL_LUMINANCE16:
+            case GL2.GL_LUMINANCE16:
             case GL.GL_LUMINANCE_ALPHA:
-            case GL.GL_LUMINANCE8_ALPHA8:
-            case GL.GL_LUMINANCE12_ALPHA4:
-            case GL.GL_INTENSITY16:
-            case GL.GL_RGB5: // Assume the driver allocates 16 bits per pixel for GL_RGB5.
+            case GL2.GL_LUMINANCE8_ALPHA8:
+            case GL2.GL_LUMINANCE12_ALPHA4:
+            case GL2.GL_INTENSITY16:
+            case GL2GL3.GL_RGB5: // Assume the driver allocates 16 bits per pixel for GL_RGB5.
             case GL.GL_RGBA4:
             case GL.GL_RGB5_A1:
-            case GL.GL_SLUMINANCE_ALPHA:
-            case GL.GL_SLUMINANCE8_ALPHA8:
+            case GL2.GL_SLUMINANCE_ALPHA:
+            case GL2.GL_SLUMINANCE8_ALPHA8:
                 return 2 * numPixels;
             // 24 bits per pixel.
-            case GL.GL_DEPTH_COMPONENT:
+            case GL2ES2.GL_DEPTH_COMPONENT:
             case GL.GL_DEPTH_COMPONENT24:
-            case GL.GL_LUMINANCE12_ALPHA12:
+            case GL2.GL_LUMINANCE12_ALPHA12:
             case GL.GL_RGB:
             case GL.GL_RGB8:
-            case GL.GL_SRGB:
-            case GL.GL_SRGB8:
+            case GL2GL3.GL_SRGB:
+            case GL2GL3.GL_SRGB8:
                 return 3 * numPixels;
             // 32 bits per pixel.
             case GL.GL_DEPTH_COMPONENT32:
-            case GL.GL_LUMINANCE16_ALPHA16:
-            case GL.GL_RGB10: // Assume the driver allocates 32 bits per pixel for GL_RGB10.
+            case GL2.GL_LUMINANCE16_ALPHA16:
+            case GL2GL3.GL_RGB10: // Assume the driver allocates 32 bits per pixel for GL_RGB10.
             case GL.GL_RGBA:
             case GL.GL_RGBA8:
-            case GL.GL_RGB10_A2:
-            case GL.GL_SRGB_ALPHA:
-            case GL.GL_SRGB8_ALPHA8:
+            case GL2GL3.GL_RGB10_A2:
+            case GL2GL3.GL_SRGB_ALPHA:
+            case GL2GL3.GL_SRGB8_ALPHA8:
                 return 4 * numPixels;
             // 36 bits per pixel.
-            case GL.GL_RGB12:
+            case GL2GL3.GL_RGB12:
                 return 36 * numPixels / 8;
             // 48 bits per pixel.
-            case GL.GL_RGB16:
-            case GL.GL_RGBA12:
+            case GL2GL3.GL_RGB16:
+            case GL2GL3.GL_RGBA12:
                 return 6 * numPixels;
             // 64 bits per pixel.
-            case GL.GL_RGBA16:
+            case GL2GL3.GL_RGBA16:
                 return 8 * numPixels;
             // Compressed internal formats. Don't try to estimate a size for compressed formats.
-            case GL.GL_COMPRESSED_ALPHA:
-            case GL.GL_COMPRESSED_LUMINANCE:
-            case GL.GL_COMPRESSED_LUMINANCE_ALPHA:
-            case GL.GL_COMPRESSED_INTENSITY:
-            case GL.GL_COMPRESSED_RGB:
-            case GL.GL_COMPRESSED_RGBA:
+            case GL2.GL_COMPRESSED_ALPHA:
+            case GL2.GL_COMPRESSED_LUMINANCE:
+            case GL2.GL_COMPRESSED_LUMINANCE_ALPHA:
+            case GL2.GL_COMPRESSED_INTENSITY:
+            case GL2GL3.GL_COMPRESSED_RGB:
+            case GL2GL3.GL_COMPRESSED_RGBA:
                 return 0;
             default:
                 return 0;

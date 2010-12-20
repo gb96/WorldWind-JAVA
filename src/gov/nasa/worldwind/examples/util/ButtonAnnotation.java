@@ -4,12 +4,18 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.examples.util;
 
-import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.event.SelectEvent;
+import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.Annotation;
+import gov.nasa.worldwind.render.BasicWWTexture;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.WWTexture;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -241,7 +247,7 @@ public class ButtonAnnotation extends ImageAnnotation implements SelectListener
         // the button depressed mask colors with the button colors.
         if (this.getPressedMaskTexture() == texture)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             gl.glEnable(GL.GL_BLEND);
             gl.glBlendFunc(GL.GL_ZERO, GL.GL_SRC_COLOR);
             gl.glColor4f(1f, 1f, 1f, 1f);
@@ -257,9 +263,9 @@ public class ButtonAnnotation extends ImageAnnotation implements SelectListener
 
         // Push state for blend enable, blending function, and current color. We set these OGL states in
         // applyBackgroundTextureState(), which is invoked by doDrawBackgroundTexture().
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL.GL_CURRENT_BIT);
+        ogsh.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL2.GL_CURRENT_BIT);
         try
         {
             this.doDrawBackgroundTexture(dc, width, height, 1, pickPosition, texture);

@@ -4,13 +4,16 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.formats.geojson;
 
-import com.sun.opengl.util.BufferUtil;
-import gov.nasa.worldwind.formats.json.*;
+import gov.nasa.worldwind.formats.json.JSONEvent;
+import gov.nasa.worldwind.formats.json.JSONEventParserContext;
 import gov.nasa.worldwind.util.Logging;
 
 import java.io.IOException;
-import java.nio.*;
-import java.util.*;
+import java.nio.DoubleBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * @author dcollins
@@ -120,7 +123,7 @@ public class GeoJSONCoordinateParser extends GeoJSONEventParser
 
     protected DoubleBuffer allocatePositionBuffer(int capacity)
     {
-        return BufferUtil.newDoubleBuffer(capacity);
+        return Buffers.newDirectDoubleBuffer(capacity);
     }
 
     protected void expandPositionBuffer(int minCapacity)

@@ -6,15 +6,30 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.terrain;
 
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.pick.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
 
 /**
  * @author tag
@@ -59,10 +74,10 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
         this.pickSupport.clearPickList();
         this.pickSupport.beginPicking(dc);
 
-        GL gl = dc.getGL();
-        gl.glPushAttrib(GL.GL_LIGHTING_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT);
+        GL2 gl = dc.getGL();
+        gl.glPushAttrib(GL2.GL_LIGHTING_BIT | GL.GL_DEPTH_BUFFER_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
         gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glShadeModel(GL.GL_FLAT);
+        gl.glShadeModel(GLLightingFunc.GL_FLAT);
         gl.glDisable(GL.GL_CULL_FACE);
 
         try
@@ -110,10 +125,10 @@ public class SectorGeometryList extends ArrayList<SectorGeometry>
         this.pickSupport.clearPickList();
         this.pickSupport.beginPicking(dc);
 
-        GL gl = dc.getGL();
-        gl.glPushAttrib(GL.GL_LIGHTING_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT);
+        GL2 gl = dc.getGL();
+        gl.glPushAttrib(GL2.GL_LIGHTING_BIT | GL.GL_DEPTH_BUFFER_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
         gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glShadeModel(GL.GL_FLAT);
+        gl.glShadeModel(GLLightingFunc.GL_FLAT);
         gl.glDisable(GL.GL_CULL_FACE);
 
         try

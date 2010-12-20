@@ -6,15 +6,30 @@ All Rights Reserved.
 package gov.nasa.worldwind.formats.vpf;
 
 import gov.nasa.worldwind.Disposable;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.BasicWWTexture;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.ShapeAttributes;
+import gov.nasa.worldwind.render.SurfacePolygon;
+import gov.nasa.worldwind.render.WWTexture;
+import gov.nasa.worldwind.util.CompoundVecBuffer;
+import gov.nasa.worldwind.util.SurfaceTileDrawContext;
+import gov.nasa.worldwind.util.VecBuffer;
+import gov.nasa.worldwind.util.VecBufferSequence;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.*;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUtessellator;
 
 /**
  * @author dcollins
@@ -137,7 +152,7 @@ public class VPFSurfaceArea extends SurfacePolygon implements Disposable // TODO
 
         if (this.interiorDisplayList > 0)
         {
-            glContext.getGL().glDeleteLists(this.interiorDisplayList, 1);
+            glContext.getGL().getGL2().glDeleteLists(this.interiorDisplayList, 1);
             this.interiorDisplayList = 0;
         }
     }
@@ -170,13 +185,13 @@ public class VPFSurfaceArea extends SurfacePolygon implements Disposable // TODO
 
         // Apply interior attributes using a reference location of (0, 0), because VPFSurfaceArea's coordinates
         // are not offset with respect to a reference location.
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.applyInteriorState(dc, sdc, this.getActiveAttributes(), this.getInteriorTexture(), LatLon.ZERO);
 
         if (this.interiorDisplayList <= 0)
         {
             this.interiorDisplayList = gl.glGenLists(1);
-            gl.glNewList(this.interiorDisplayList, GL.GL_COMPILE);
+            gl.glNewList(this.interiorDisplayList, GL2.GL_COMPILE);
             // Tessellate the interior vertices using a reference location of (0, 0), because VPFSurfaceArea's
             // coordinates do not neet to be offset with respect to a reference location.
             this.tessellateInterior(dc);

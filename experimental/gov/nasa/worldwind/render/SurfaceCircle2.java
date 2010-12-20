@@ -4,10 +4,12 @@
  */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.render.airspaces.*;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.render.airspaces.AirspaceAttributes;
+import gov.nasa.worldwind.render.airspaces.CappedCylinder;
 
-import javax.media.opengl.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * @author brownrigg
@@ -42,22 +44,22 @@ public class SurfaceCircle2 extends CappedCylinder
     {
         // Modify the projection transform to shift the depth values slightly toward the camera in order to
         // ensure the shape is selected during depth buffering.
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         float[] pm = new float[16];
-        gl.glGetFloatv(GL.GL_PROJECTION_MATRIX, pm, 0);
+        gl.glGetFloatv(GLMatrixFunc.GL_PROJECTION_MATRIX, pm, 0);
         pm[10] *= .8; // TODO: See Lengyel 2 ed. Section 9.1.2 to compute optimal/minimal offset
 
-        gl.glPushAttrib(GL.GL_TRANSFORM_BIT);
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glPushAttrib(GL2.GL_TRANSFORM_BIT);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPushMatrix();
         gl.glLoadMatrixf(pm, 0);
     }
 
     protected void endDrawShape(DrawContext dc)
     {
-        GL gl = dc.getGL();
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        GL2 gl = dc.getGL();
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPopMatrix();
         gl.glPopAttrib();
     }

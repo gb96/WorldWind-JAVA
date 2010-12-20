@@ -7,13 +7,21 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
-import com.sun.opengl.util.texture.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.*;
 import java.util.List;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLProfile;
+
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * @author tag
@@ -75,14 +83,14 @@ public class FBOTexture extends FramebufferTexture
             }
         }
 
-        GL gl = GLContext.getCurrent().getGL();
+        GL2 gl = GLContext.getCurrent().getGL().getGL2();
 
         int[] fbo = new int[1];
-        gl.glGenFramebuffersEXT(1, fbo, 0);
-        gl.glBindFramebufferEXT(GL.GL_FRAMEBUFFER_EXT, fbo[0]);
+        gl.glGenFramebuffers(1, fbo, 0);
+        gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, fbo[0]);
 
-        TextureData td = new TextureData(GL.GL_RGBA, this.width, this.height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
-            false, false, true, BufferUtil.newByteBuffer(this.width * this.height * 4), null);
+        TextureData td = new TextureData(GLProfile.getDefault(), GL.GL_RGBA, this.width, this.height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
+            false, false, true, Buffers.newDirectByteBuffer(this.width * this.height * 4), null);
         Texture t = TextureIO.newTexture(td);
         t.bind();
 
@@ -91,15 +99,15 @@ public class FBOTexture extends FramebufferTexture
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
 
-        gl.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT, GL.GL_TEXTURE_2D,
+        gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D,
             t.getTextureObject(), 0);
 
-        int status = gl.glCheckFramebufferStatusEXT(GL.GL_FRAMEBUFFER_EXT);
-        if (status == GL.GL_FRAMEBUFFER_COMPLETE_EXT)
+        int status = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER);
+        if (status == GL.GL_FRAMEBUFFER_COMPLETE)
         {
             this.generateTexture(dc, this.width, this.height);
-            gl.glBindFramebufferEXT(GL.GL_FRAMEBUFFER_EXT, 0);
-            gl.glDeleteFramebuffersEXT(1, fbo, 0);
+            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
+            gl.glDeleteFramebuffers(1, fbo, 0);
         }
         else
         {

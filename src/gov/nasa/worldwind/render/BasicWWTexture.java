@@ -7,13 +7,23 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWIO;
 
-import javax.media.opengl.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.net.URL;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLProfile;
+
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureCoords;
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
+import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 
 /**
  * This class holds information for a texture and provides utilities for binding and initializing textures.
@@ -217,7 +227,7 @@ public class BasicWWTexture implements WWTexture
         {
             if (t.getMustFlipVertically())
             {
-                GL gl = GLContext.getCurrent().getGL();
+                GL2 gl = GLContext.getCurrent().getGL().getGL2();
                 gl.glMatrixMode(GL.GL_TEXTURE);
                 gl.glLoadIdentity();
                 gl.glScaled(1, -1, 1);
@@ -256,7 +266,7 @@ public class BasicWWTexture implements WWTexture
 
             try
             {
-                TextureData td = TextureIO.newTextureData((InputStream) streamOrException, this.useMipMaps, null);
+                TextureData td = TextureIO.newTextureData(GLProfile.getDefault(), (InputStream) streamOrException, this.useMipMaps, null);
                 t = TextureIO.newTexture(td);
                 haveMipMapData = td.getMipmapData() != null;
             }
@@ -273,7 +283,7 @@ public class BasicWWTexture implements WWTexture
         {
             try
             {
-                TextureData td = TextureIO.newTextureData((BufferedImage) imageSource, this.useMipMaps);
+                TextureData td = AWTTextureIO.newTextureData(GLProfile.getDefault(), (BufferedImage) imageSource, this.useMipMaps);
                 t = TextureIO.newTexture(td);
                 haveMipMapData = td.getMipmapData() != null;
             }
@@ -298,7 +308,7 @@ public class BasicWWTexture implements WWTexture
                     return null;
                 }
 
-                TextureData td = TextureIO.newTextureData(stream, this.useMipMaps, null);
+                TextureData td = TextureIO.newTextureData(GLProfile.getDefault(), stream, this.useMipMaps, null);
                 t = TextureIO.newTexture(td);
                 haveMipMapData = td.getMipmapData() != null;
             }
@@ -336,7 +346,7 @@ public class BasicWWTexture implements WWTexture
         // enabled, and the texture itself supports mip-mapping.
         boolean useMipMapFilter = this.useMipMaps && (haveMipMapData || t.isUsingAutoMipmapGeneration());
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
             useMipMapFilter ? GL.GL_LINEAR_MIPMAP_LINEAR : GL.GL_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);

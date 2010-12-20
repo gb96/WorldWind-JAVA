@@ -128,7 +128,7 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
 
         if (this.interiorDisplayList > 0)
         {
-            glContext.getGL().glDeleteLists(this.interiorDisplayList, 1);
+            glContext.getGL().getGL2().glDeleteLists(this.interiorDisplayList, 1);
             this.interiorDisplayList = 0;
         }
     }
@@ -153,7 +153,7 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
         if (this.interiorDisplayList <= 0)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.applyInteriorState(dc, sdc, this.getActiveAttributes(), this.getTexture(), referencePos);
         gl.glCallList(this.interiorDisplayList);
 
@@ -216,13 +216,13 @@ public class SurfacePolygons extends SurfacePolylines // TODO: Review
 
     protected void doTessellateInterior(DrawContext dc, LatLon referenceLocation)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         GLU glu = dc.getGLU();
         GLUtessellatorCallback cb = GLUTessellatorSupport.createOGLDrawPrimitivesCallback(dc.getGL());
 
         if (this.interiorDisplayList <= 0)
             this.interiorDisplayList = gl.glGenLists(1);
-        gl.glNewList(this.interiorDisplayList, GL.GL_COMPILE);
+        gl.glNewList(this.interiorDisplayList, GL2.GL_COMPILE);
 
         GLUTessellatorSupport glts = new GLUTessellatorSupport();
         glts.beginTessellation(glu, cb, new Vec4(0, 0, 1));

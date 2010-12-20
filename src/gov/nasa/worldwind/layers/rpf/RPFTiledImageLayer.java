@@ -5,21 +5,43 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.layers.rpf;
 
-import com.sun.opengl.util.texture.*;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.cache.FileStore;
 import gov.nasa.worldwind.formats.dds.DDSCompressor;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.layers.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.layers.TextureTile;
+import gov.nasa.worldwind.layers.TiledImageLayer;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.retrieve.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.retrieve.AbstractRetrievalPostProcessor;
+import gov.nasa.worldwind.retrieve.Retriever;
+import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.TileUrlBuilder;
+import gov.nasa.worldwind.util.WWIO;
 
-import java.awt.image.*;
-import java.io.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.GregorianCalendar;
+import java.util.Map;
+
+import javax.media.opengl.GLProfile;
+
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * @author dcollins
@@ -677,7 +699,7 @@ public class RPFTiledImageLayer extends TiledImageLayer
     {
         try
         {
-            return TextureIO.newTextureData(url, useMipMaps, null);
+            return TextureIO.newTextureData(GLProfile.getDefault(), url, useMipMaps, null);
         }
         catch (Exception e)
         {

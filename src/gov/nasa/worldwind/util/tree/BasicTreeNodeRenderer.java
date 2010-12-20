@@ -7,17 +7,28 @@
 
 package gov.nasa.worldwind.util.tree;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import com.sun.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.MultiLineTextRenderer;
+import gov.nasa.worldwind.render.WWTexture;
+import gov.nasa.worldwind.util.HotSpot;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.OGLUtil;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.awt.geom.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * Tree node renderer that draws a node in a {@link BasicTreeLayout}. Each node is drawn as one or more lines of text,
@@ -91,7 +102,7 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
         if (!node.isVisible())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler oglStack = new OGLStackHandler();
 
@@ -122,8 +133,8 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
                 oglStack.pushAttrib(gl,
                     GL.GL_DEPTH_BUFFER_BIT
                         | GL.GL_COLOR_BUFFER_BIT
-                        | GL.GL_TEXTURE_BIT
-                        | GL.GL_CURRENT_BIT);
+                        | GL2.GL_TEXTURE_BIT
+                        | GL2.GL_CURRENT_BIT);
             }
 
             // If the node is not a leaf, draw a symbol to indicate if it is expanded or collapsed
@@ -258,7 +269,7 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
     protected void drawIcon(DrawContext dc, TreeNode node, TreeAttributes attributes, int x, int y,
         Rectangle nodeBounds)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         WWTexture texture = node.getTexture();
 
@@ -267,10 +278,10 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
         {
             if (texture != null && texture.bind(dc))
             {
-                oglStack.pushAttrib(gl, GL.GL_TEXTURE_BIT
+                oglStack.pushAttrib(gl, GL2.GL_TEXTURE_BIT
                     | GL.GL_COLOR_BUFFER_BIT
-                    | GL.GL_ENABLE_BIT
-                    | GL.GL_CURRENT_BIT);
+                    | GL2.GL_ENABLE_BIT
+                    | GL2.GL_CURRENT_BIT);
 
                 gl.glEnable(GL.GL_TEXTURE_2D);
 
@@ -419,13 +430,13 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
     protected void drawCheckBox(DrawContext dc, Color color, double opacity, Rectangle bounds, boolean filled,
         boolean checked)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         try
         {
-            gl.glPushAttrib(GL.GL_POLYGON_BIT
-                | GL.GL_CURRENT_BIT
-                | GL.GL_LINE_BIT);
+            gl.glPushAttrib(GL2.GL_POLYGON_BIT
+                | GL2.GL_CURRENT_BIT
+                | GL2.GL_LINE_BIT);
 
             gl.glLineWidth(1f);
 
@@ -435,7 +446,7 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
             if (filled)
             {
                 // Fill box with a diagonal gradient
-                gl.glBegin(GL.GL_QUADS);
+                gl.glBegin(GL2.GL_QUADS);
                 OGLUtil.applyColor(gl, color1, opacity, false);
                 gl.glVertex2d(bounds.getMaxX(), bounds.getMaxY());
                 gl.glVertex2d(bounds.getMinX(), bounds.getMaxY());
@@ -456,7 +467,7 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
                 gl.glEnd();
             }
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_LINE);
+            gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_LINE);
             gl.glRecti(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
         }
         finally
@@ -476,14 +487,14 @@ public class BasicTreeNodeRenderer implements TreeNodeRenderer
      */
     protected void drawTriangle(DrawContext dc, float rotation, Color color, double opacity, Rectangle bounds)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler oglStack = new OGLStackHandler();
         try
         {
             oglStack.pushModelviewIdentity(gl);
 
-            oglStack.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL.GL_CURRENT_BIT | GL.GL_LINE_BIT);
+            oglStack.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LINE_BIT);
 
             gl.glLineWidth(1f);
             OGLUtil.applyColor(gl, color, opacity, false);

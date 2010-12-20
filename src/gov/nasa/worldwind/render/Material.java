@@ -9,8 +9,10 @@ package gov.nasa.worldwind.render;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.RestorableSupport;
 
-import javax.media.opengl.GL;
-import java.awt.*;
+import java.awt.Color;
+
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
 
 /**
  * @author tag
@@ -111,7 +113,7 @@ public class Material
         return this.shininess;
     }
 
-    public void apply(GL gl, int face)
+    public void apply(GL2 gl, int face)
     {
         if (gl == null)
         {
@@ -120,14 +122,14 @@ public class Material
             throw new IllegalArgumentException(msg);
         }
 
-        glMaterial(gl, face, GL.GL_AMBIENT, this.ambient);
-        glMaterial(gl, face, GL.GL_DIFFUSE, this.diffuse);
-        glMaterial(gl, face, GL.GL_SPECULAR, this.specular);
-        glMaterial(gl, face, GL.GL_EMISSION, this.emission);
-        gl.glMaterialf(face, GL.GL_SHININESS, (float) this.shininess);
+        glMaterial(gl, face, GLLightingFunc.GL_AMBIENT, this.ambient);
+        glMaterial(gl, face, GLLightingFunc.GL_DIFFUSE, this.diffuse);
+        glMaterial(gl, face, GLLightingFunc.GL_SPECULAR, this.specular);
+        glMaterial(gl, face, GLLightingFunc.GL_EMISSION, this.emission);
+        gl.glMaterialf(face, GLLightingFunc.GL_SHININESS, (float) this.shininess);
     }
 
-    public void apply(GL gl, int face, float alpha)
+    public void apply(GL2 gl, int face, float alpha)
     {
         if (gl == null)
         {
@@ -138,14 +140,14 @@ public class Material
 
         // The alpha value at a vertex is taken only from the diffuse material's alpha channel. Therefore we specify
         // alpha for the diffuse value, and alpha=0 for ambient, specular and emission values.
-        glMaterial(gl, face, GL.GL_AMBIENT, this.ambient, 0.0f);
-        glMaterial(gl, face, GL.GL_DIFFUSE, this.diffuse, alpha);
-        glMaterial(gl, face, GL.GL_SPECULAR, this.specular, 0.0f);
-        glMaterial(gl, face, GL.GL_EMISSION, this.emission, 0.0f);
-        gl.glMaterialf(face, GL.GL_SHININESS, (float) this.shininess);
+        glMaterial(gl, face, GLLightingFunc.GL_AMBIENT, this.ambient, 0.0f);
+        glMaterial(gl, face, GLLightingFunc.GL_DIFFUSE, this.diffuse, alpha);
+        glMaterial(gl, face, GLLightingFunc.GL_SPECULAR, this.specular, 0.0f);
+        glMaterial(gl, face, GLLightingFunc.GL_EMISSION, this.emission, 0.0f);
+        gl.glMaterialf(face, GLLightingFunc.GL_SHININESS, (float) this.shininess);
     }
 
-    protected void glMaterial(GL gl, int face, int name, Color color)
+    protected void glMaterial(GL2 gl, int face, int name, Color color)
     {
         if (gl == null)
         {
@@ -165,7 +167,7 @@ public class Material
         gl.glMaterialfv(face, name, compArray, 0);
     }
 
-    protected void glMaterial(GL gl, int face, int name, Color color, float alpha)
+    protected void glMaterial(GL2 gl, int face, int name, Color color, float alpha)
     {
         if (gl == null)
         {
@@ -186,7 +188,7 @@ public class Material
         gl.glMaterialfv(face, name, compArray, 0);
     }
 
-    //protected void glMaterialPremult(GL gl, int face, int name, Color color)
+    //protected void glMaterialPremult(GL2 gl, int face, int name, Color color)
     //{
     //    float[] compArray = new float[4];
     //    color.getRGBComponents(compArray);
@@ -196,7 +198,7 @@ public class Material
     //    gl.glMaterialfv(face, name, compArray, 0);
     //}
 
-    //protected void glMaterialfvPremult(GL gl, int face, int name, Color color, float alpha)
+    //protected void glMaterialfvPremult(GL2 gl, int face, int name, Color color, float alpha)
     //{
     //    float[] compArray = new float[4];
     //    color.getRGBColorComponents(compArray);

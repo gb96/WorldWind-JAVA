@@ -6,16 +6,25 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.*;
-import com.sun.opengl.util.texture.*;
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.terrain.*;
+import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.terrain.SectorGeometry;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.*;
-import java.nio.*;
-import java.util.*;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.logging.Level;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLProfile;
+
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * @author tag
@@ -106,14 +115,14 @@ public abstract class SurfaceTileRenderer implements Disposable
             throw new IllegalStateException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT // for alpha func
-            | GL.GL_ENABLE_BIT
-            | GL.GL_CURRENT_BIT
+            | GL2.GL_ENABLE_BIT
+            | GL2.GL_CURRENT_BIT
             | GL.GL_DEPTH_BUFFER_BIT // for depth func
-            | GL.GL_TEXTURE_BIT // for texture env
-            | GL.GL_TRANSFORM_BIT);
+            | GL2.GL_TEXTURE_BIT // for texture env
+            | GL2.GL_TRANSFORM_BIT);
 
         try
         {
@@ -131,7 +140,7 @@ public abstract class SurfaceTileRenderer implements Disposable
             gl.glEnable(GL.GL_DEPTH_TEST);
             gl.glDepthFunc(GL.GL_LEQUAL);
 
-            gl.glEnable(GL.GL_ALPHA_TEST);
+            gl.glEnable(GL2ES1.GL_ALPHA_TEST);
             gl.glAlphaFunc(GL.GL_GREATER, 0.01f);
 
             gl.glActiveTexture(GL.GL_TEXTURE0);
@@ -140,13 +149,13 @@ public abstract class SurfaceTileRenderer implements Disposable
             gl.glPushMatrix();
             if (!dc.isPickingMode())
             {
-                gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
+                gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_MODULATE);
             }
             else
             {
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, GL.GL_PREVIOUS);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_REPLACE);
+                gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_COMBINE);
+                gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_SRC0_RGB, GL2ES1.GL_PREVIOUS);
+                gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_COMBINE_RGB, GL.GL_REPLACE);
             }
 
             int numTexUnitsUsed = 2;
@@ -159,14 +168,14 @@ public abstract class SurfaceTileRenderer implements Disposable
                 gl.glEnable(GL.GL_TEXTURE_2D);
                 gl.glMatrixMode(GL.GL_TEXTURE);
                 gl.glPushMatrix();
-                gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_ADD);
+                gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_ADD);
             }
 
             gl.glActiveTexture(alphaTextureUnit);
             gl.glEnable(GL.GL_TEXTURE_2D);
             gl.glMatrixMode(GL.GL_TEXTURE);
             gl.glPushMatrix();
-            gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
+            gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_MODULATE);
 
             // For each current geometry tile, find the intersecting image tiles and render the geometry
             // tile once for each intersecting image tile.
@@ -270,24 +279,24 @@ public abstract class SurfaceTileRenderer implements Disposable
 
     protected void initAlphaTexture(int size)
     {
-        ByteBuffer textureBytes = BufferUtil.newByteBuffer(size * size);
+        ByteBuffer textureBytes = Buffers.newDirectByteBuffer(size * size);
         fillByteBuffer(textureBytes, (byte) 0xff);
 
-        TextureData textureData = new TextureData(GL.GL_ALPHA, size, size, 0, GL.GL_ALPHA,
+        TextureData textureData = new TextureData(GLProfile.getDefault(), GL.GL_ALPHA, size, size, 0, GL.GL_ALPHA,
             GL.GL_UNSIGNED_BYTE, false, false, false, textureBytes.rewind(), null);
         this.alphaTexture = TextureIO.newTexture(textureData);
 
         this.alphaTexture.bind();
         this.alphaTexture.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
         this.alphaTexture.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        this.alphaTexture.setTexParameteri(GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_BORDER);
-        this.alphaTexture.setTexParameteri(GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_BORDER);
+        this.alphaTexture.setTexParameteri(GL.GL_TEXTURE_WRAP_S, GL2GL3.GL_CLAMP_TO_BORDER);
+        this.alphaTexture.setTexParameteri(GL.GL_TEXTURE_WRAP_T, GL2GL3.GL_CLAMP_TO_BORDER);
         // Assume the default border color of (0, 0, 0, 0).
     }
 
     protected void initOutlineTexture(int size)
     {
-        ByteBuffer textureBytes = BufferUtil.newByteBuffer(size * size);
+        ByteBuffer textureBytes = Buffers.newDirectByteBuffer(size * size);
         for (int row = 0; row < size; row++)
         {
             for (int col = 0; col < size; col++)
@@ -301,7 +310,7 @@ public abstract class SurfaceTileRenderer implements Disposable
             }
         }
 
-        TextureData textureData = new TextureData(GL.GL_LUMINANCE, size, size, 0, GL.GL_LUMINANCE,
+        TextureData textureData = new TextureData(GLProfile.getDefault(), GL.GL_LUMINANCE, size, size, 0, GL.GL_LUMINANCE,
             GL.GL_UNSIGNED_BYTE, false, false, false, textureBytes.rewind(), null);
         this.outlineTexture = TextureIO.newTexture(textureData);
 

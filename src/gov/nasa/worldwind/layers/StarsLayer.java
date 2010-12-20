@@ -8,11 +8,18 @@ package gov.nasa.worldwind.layers;
 
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWIO;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL;
-import java.io.*;
-import java.nio.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * Renders a star background based on a subset of ESA Hipparcos catalog.
@@ -163,7 +170,7 @@ public class StarsLayer extends RenderableLayer
     @Override
     public void doRender(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
         boolean projectionPushed = false;
@@ -184,15 +191,15 @@ public class StarsLayer extends RenderableLayer
             // GL set up
             // Save GL state
 /*            gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT
-                | GL.GL_POLYGON_BIT | GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT
-                | GL.GL_CURRENT_BIT);    */
-            gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_POLYGON_BIT);
+                | GL2.GL_POLYGON_BIT | GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT
+                | GL2.GL_CURRENT_BIT);    */
+            gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_POLYGON_BIT);
             attribsPushed = true;
             gl.glDisable(GL.GL_TEXTURE_2D);        // no textures
             gl.glDisable(GL.GL_DEPTH_TEST);        // no depth testing
 
             // Set far clipping far enough - is this the right way to do it ?
-            gl.glMatrixMode(GL.GL_PROJECTION);
+            gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadIdentity();
@@ -205,24 +212,24 @@ public class StarsLayer extends RenderableLayer
                 near, far);
 
             // Rotate sphere
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             gl.glRotatef((float) this.longitudeOffset.degrees, 0.0f, 1.0f, 0.0f);
             gl.glRotatef((float) -this.latitudeOffset.degrees, 1.0f, 0.0f, 0.0f);
 
             // Draw
-            gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+            gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
                 gl.glBindBuffer(GL.GL_ARRAY_BUFFER, this.starsBufferId);
-                gl.glInterleavedArrays(GL.GL_C3F_V3F, 0, 0);
+                gl.glInterleavedArrays(GL2.GL_C3F_V3F, 0, 0);
                 gl.glDrawArrays(GL.GL_POINTS, 0, this.numStars);
             }
             else
             {
-                gl.glInterleavedArrays(GL.GL_C3F_V3F, 0, this.starsBuffer);
+                gl.glInterleavedArrays(GL2.GL_C3F_V3F, 0, this.starsBuffer);
                 gl.glDrawArrays(GL.GL_POINTS, 0, this.numStars);
             }
 
@@ -233,12 +240,12 @@ public class StarsLayer extends RenderableLayer
             // Restore GL state
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (attribsPushed)
@@ -333,14 +340,14 @@ public class StarsLayer extends RenderableLayer
 
         if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             //Create a new bufferId
             int glBuf[] = new int[1];
             gl.glGenBuffers(1, glBuf, 0);
             starsBufferId = glBuf[0];
 
-            gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+            gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, starsBufferId);
             gl.glBufferData(GL.GL_ARRAY_BUFFER, this.starsBuffer.limit() * 4, this.starsBuffer, GL.GL_STATIC_DRAW);

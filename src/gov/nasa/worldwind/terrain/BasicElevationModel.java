@@ -6,27 +6,68 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.terrain;
 
-import com.sun.opengl.util.BufferUtil;
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.cache.*;
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.cache.BasicMemoryCache;
+import gov.nasa.worldwind.cache.Cacheable;
+import gov.nasa.worldwind.cache.FileStore;
+import gov.nasa.worldwind.cache.MemoryCache;
 import gov.nasa.worldwind.event.BulkRetrievalListener;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
-import gov.nasa.worldwind.retrieve.*;
-import gov.nasa.worldwind.util.*;
-import org.w3c.dom.*;
+import gov.nasa.worldwind.retrieve.AbstractRetrievalPostProcessor;
+import gov.nasa.worldwind.retrieve.BulkRetrievable;
+import gov.nasa.worldwind.retrieve.BulkRetrievalThread;
+import gov.nasa.worldwind.retrieve.HTTPRetriever;
+import gov.nasa.worldwind.retrieve.Retriever;
+import gov.nasa.worldwind.retrieve.RetrieverFactory;
+import gov.nasa.worldwind.retrieve.URLRetriever;
+import gov.nasa.worldwind.util.AbsentResourceList;
+import gov.nasa.worldwind.util.BufferWrapper;
+import gov.nasa.worldwind.util.DataConfigurationUtils;
+import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+import gov.nasa.worldwind.util.SessionCacheUtils;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.TileKey;
+import gov.nasa.worldwind.util.WWIO;
+import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwind.util.WWXML;
+
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.xml.xpath.XPath;
-import java.awt.image.*;
-import java.io.*;
-import java.net.URL;
-import java.nio.*;
-import java.util.*;
-import java.util.concurrent.*;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.jogamp.common.nio.Buffers;
 
 // Implementation notes, not for API doc:
 //
@@ -559,7 +600,7 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         {
             WWIO.saveBuffer(buffer, tempFile);
             BufferedImage image = ImageIO.read(tempFile);
-            ByteBuffer byteBuffer = BufferUtil.newByteBuffer(image.getWidth() * image.getHeight() * 2);
+            ByteBuffer byteBuffer = Buffers.newDirectByteBuffer(image.getWidth() * image.getHeight() * 2);
             byteBuffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
             ShortBuffer bilBuffer = byteBuffer.asShortBuffer();
 

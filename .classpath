@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="experimental"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.6.0_22/jre/lib/plugin.jar"/>
+	<classpathentry kind="lib" path="lib2/gluegen-gl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/gluegen-rt-natives-windows-i586-cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/gluegen-rt-natives-windows-i586.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/gluegen-rt.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/gluegen-rt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl-natives-windows-i586-cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl-natives-windows-i586.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.all-noawt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.all.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.all.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.awt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.core.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.core.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.egl.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.egl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gldesktop.dbg.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gldesktop.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles1.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles1.dbg.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles1.dbg.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles1.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles2.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles2.dbg.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles2.dbg.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.gles2.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.glu.gldesktop.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.glu.mipmap.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.glu.mipmap.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.glu.tess.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.glu.tess.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.os.win.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.sdk.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.test.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.util.awt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.util.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.util.fixedfuncemu.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.util.fixedfuncemu.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.util.gldesktop.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/jogl.util.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow-natives-windows-i586-cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow-natives-windows-i586.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.all-noawt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.all.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.all.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.awt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.core.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.core.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.os.windows.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/nativewindow.os.windows.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt-natives-windows-i586-cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt-natives-windows-i586.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.all-noawt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.all.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.all.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.awt.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.broadcomegl.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.broadcomegl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.core.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.core.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.event.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.intelgdl.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.intelgdl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.ogl.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.ogl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.os.win.cdc.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib2/newt.os.win.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="WorldWind-JAVA/lib2"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/gdal.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

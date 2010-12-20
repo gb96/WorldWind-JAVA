@@ -6,17 +6,25 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.*;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLTextRenderer;
 
-import javax.media.opengl.*;
-import java.awt.*;
-import java.awt.geom.*;
-import java.util.*;
-import java.util.regex.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.media.opengl.GL2;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
     /**
      * Multi line, rectangle bound text renderer with (very) minimal html support.
@@ -1262,8 +1270,8 @@ import java.util.regex.*;
         // Draw a filled rectangle
         private void drawFilledRectangle(DrawContext dc, double x, double y, double width, double height)
         {
-            GL gl = dc.getGL();
-            gl.glBegin(GL.GL_POLYGON);
+            GL2 gl = dc.getGL();
+            gl.glBegin(GL2.GL_POLYGON);
             gl.glVertex3d(x, y, 0);
             gl.glVertex3d(x + width - 1, y, 0);
             gl.glVertex3d(x + width - 1, y + height - 1, 0);

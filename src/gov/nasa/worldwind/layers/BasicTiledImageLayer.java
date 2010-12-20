@@ -6,27 +6,54 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.texture.*;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.cache.FileStore;
 import gov.nasa.worldwind.event.BulkRetrievalListener;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.formats.dds.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.formats.dds.DDSCompressor;
+import gov.nasa.worldwind.formats.dds.DXTCompressionAttributes;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.retrieve.*;
-import gov.nasa.worldwind.util.*;
-import org.w3c.dom.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.ScreenCredit;
+import gov.nasa.worldwind.retrieve.AbstractRetrievalPostProcessor;
+import gov.nasa.worldwind.retrieve.BulkRetrievable;
+import gov.nasa.worldwind.retrieve.BulkRetrievalThread;
+import gov.nasa.worldwind.retrieve.Retriever;
+import gov.nasa.worldwind.retrieve.RetrieverFactory;
+import gov.nasa.worldwind.retrieve.URLRetriever;
+import gov.nasa.worldwind.util.AbsentResourceList;
+import gov.nasa.worldwind.util.DataConfigurationUtils;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+import gov.nasa.worldwind.util.SessionCacheUtils;
+import gov.nasa.worldwind.util.WWIO;
+import gov.nasa.worldwind.util.WWXML;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.*;
+import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.media.opengl.GLProfile;
+import javax.swing.SwingUtilities;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * @author tag
@@ -378,13 +405,13 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
                 attributes.setBuildMipmaps(useMipMaps);
                 ByteBuffer buffer = DDSCompressor.compressImageURL(url, attributes);
 
-                return TextureIO.newTextureData(WWIO.getInputStreamFromByteBuffer(buffer), useMipMaps, null);
+                return TextureIO.newTextureData(GLProfile.getDefault(), WWIO.getInputStreamFromByteBuffer(buffer), useMipMaps, null);
             }
             // If the caller has disabled texture compression, or if the texture data is already a DDS file, then read
             // the texture data without converting it.
             else
             {
-                return TextureIO.newTextureData(url, useMipMaps, null);
+                return TextureIO.newTextureData(GLProfile.getDefault(), url, useMipMaps, null);
             }
         }
         catch (Exception e)

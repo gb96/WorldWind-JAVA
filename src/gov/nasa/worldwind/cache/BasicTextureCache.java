@@ -6,9 +6,9 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.cache;
 
-import com.sun.opengl.util.texture.Texture;
-
 import javax.media.opengl.GLContext;
+
+import com.jogamp.opengl.util.texture.Texture;
 
 /**
  * @author tag

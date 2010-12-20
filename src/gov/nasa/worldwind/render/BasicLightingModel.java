@@ -8,9 +8,14 @@ All Rights Reserved.
 package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.geom.Vec4;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * Provides a simple lighting model with one light. This model uses only OpenGL light 0.
@@ -30,7 +35,7 @@ public class BasicLightingModel implements LightingModel
         if (this.lightingStackHandler.isActive())
             return; // lighting is already enabled
 
-        this.lightingStackHandler.pushAttrib(dc.getGL(), GL.GL_LIGHTING_BIT);
+        this.lightingStackHandler.pushAttrib(dc.getGL(), GL2.GL_LIGHTING_BIT);
 
         this.apply(dc);
     }
@@ -101,18 +106,18 @@ public class BasicLightingModel implements LightingModel
 
     protected void apply(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glEnable(GL.GL_LIGHTING);
+        gl.glEnable(GLLightingFunc.GL_LIGHTING);
         applyStandardLightModel(gl);
         applyStandardShadeModel(gl);
 
-        gl.glEnable(GL.GL_LIGHT0);
-        applyStandardLightMaterial(gl, GL.GL_LIGHT0, this.lightMaterial);
-        applyStandardLightDirection(gl, GL.GL_LIGHT0, this.lightDirection);
+        gl.glEnable(GLLightingFunc.GL_LIGHT0);
+        applyStandardLightMaterial(gl, GLLightingFunc.GL_LIGHT0, this.lightMaterial);
+        applyStandardLightDirection(gl, GLLightingFunc.GL_LIGHT0, this.lightDirection);
     }
 
-    protected void applyStandardLightModel(GL gl)
+    protected void applyStandardLightModel(GL2 gl)
     {
         float[] modelAmbient = new float[4];
         modelAmbient[0] = 1.0f;
@@ -120,18 +125,18 @@ public class BasicLightingModel implements LightingModel
         modelAmbient[2] = 1.0f;
         modelAmbient[3] = 0.0f;
 
-        gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, modelAmbient, 0);
-        gl.glLightModeli(GL.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE);
-//        gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_FALSE);
-        gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
+        gl.glLightModelfv(GL2ES1.GL_LIGHT_MODEL_AMBIENT, modelAmbient, 0);
+        gl.glLightModeli(GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE);
+//        gl.glLightModeli(GL2ES1.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_FALSE);
+        gl.glLightModeli(GL2ES1.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
     }
 
-    protected void applyStandardShadeModel(GL gl)
+    protected void applyStandardShadeModel(GL2 gl)
     {
-        gl.glShadeModel(GL.GL_SMOOTH);
+        gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
     }
 
-    protected static void applyStandardLightMaterial(GL gl, int light, Material material)
+    protected static void applyStandardLightMaterial(GL2 gl, int light, Material material)
     {
         // The alpha value at a vertex is taken only from the diffuse material's alpha channel, without any
         // lighting computations applied. Therefore we specify alpha=0 for all lighting ambient, specular and
@@ -144,12 +149,12 @@ public class BasicLightingModel implements LightingModel
         material.getSpecular().getRGBColorComponents(specular);
         ambient[3] = diffuse[3] = specular[3] = 0.0f;
 
-        gl.glLightfv(light, GL.GL_AMBIENT, ambient, 0);
-        gl.glLightfv(light, GL.GL_DIFFUSE, diffuse, 0);
-        gl.glLightfv(light, GL.GL_SPECULAR, specular, 0);
+        gl.glLightfv(light, GLLightingFunc.GL_AMBIENT, ambient, 0);
+        gl.glLightfv(light, GLLightingFunc.GL_DIFFUSE, diffuse, 0);
+        gl.glLightfv(light, GLLightingFunc.GL_SPECULAR, specular, 0);
     }
 
-    protected void applyStandardLightDirection(GL gl, int light, Vec4 direction)
+    protected void applyStandardLightDirection(GL2 gl, int light, Vec4 direction)
     {
         // Setup the light as a directional light coming from the viewpoint. This requires two state changes
         // (a) Set the light position as direction x, y, z, and set the w-component to 0, which tells OpenGL this is
@@ -164,11 +169,11 @@ public class BasicLightingModel implements LightingModel
         params[2] = (float) vec.z;
         params[3] = 0.0f;
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
-        gl.glLightfv(light, GL.GL_POSITION, params, 0);
+        gl.glLightfv(light, GLLightingFunc.GL_POSITION, params, 0);
 
         gl.glPopMatrix();
     }

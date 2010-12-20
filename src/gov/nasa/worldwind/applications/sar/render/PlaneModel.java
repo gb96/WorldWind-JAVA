@@ -187,13 +187,13 @@ public class PlaneModel implements Renderable {
 /*
     private void renderPlane(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         // Save gl state
-        gl.glPushAttrib(GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT);
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glPushAttrib(GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
 
-        gl.glDisable(javax.media.opengl.GL.GL_TEXTURE_2D);
+        gl.glDisable(GL.GL_TEXTURE_2D);
         gl.glColor3d(this.color.getRed() / 255d, this.color.getGreen() / 255d, this.color.getBlue() / 255d);
 
         // Placement and orientation

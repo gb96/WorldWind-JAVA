@@ -6,24 +6,60 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Box;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Earth;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.retrieve.*;
-import gov.nasa.worldwind.util.*;
-import org.w3c.dom.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.retrieve.AbstractRetrievalPostProcessor;
+import gov.nasa.worldwind.retrieve.HTTPRetriever;
+import gov.nasa.worldwind.retrieve.Retriever;
+import gov.nasa.worldwind.util.DataConfigurationUtils;
+import gov.nasa.worldwind.util.ImageUtil;
+import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.PerformanceStatistic;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.TileKey;
+import gov.nasa.worldwind.util.WWIO;
+import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwind.util.WWXML;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GL2GL3;
 import javax.xml.xpath.XPath;
-import java.awt.image.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.PriorityBlockingQueue;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author tag
@@ -623,19 +659,19 @@ public abstract class TiledImageLayer extends AbstractLayer
             sortedTiles = this.currentTiles.toArray(sortedTiles);
             Arrays.sort(sortedTiles, levelComparer);
 
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             if (this.isUseTransparentTextures() || this.getOpacity() < 1)
             {
-                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT | GL.GL_CURRENT_BIT);
+                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_CURRENT_BIT);
                 this.setBlendingFunction(dc);
             }
             else
             {
-                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT);
+                gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT);
             }
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_FILL);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
 
@@ -681,7 +717,7 @@ public abstract class TiledImageLayer extends AbstractLayer
         // color as a premultiplied color, so that any incoming premultiplied color will be properly combined with the
         // base color.
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         double alpha = this.getOpacity();
         gl.glColor4d(alpha, alpha, alpha, alpha);
@@ -788,7 +824,7 @@ public abstract class TiledImageLayer extends AbstractLayer
     protected void drawBoundingVolumes(DrawContext dc, ArrayList<TextureTile> tiles)
     {
         float[] previousColor = new float[4];
-        dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, previousColor, 0);
+        dc.getGL().glGetFloatv(GL2ES1.GL_CURRENT_COLOR, previousColor, 0);
         dc.getGL().glColor3d(0, 1, 0);
 
         for (TextureTile tile : tiles)

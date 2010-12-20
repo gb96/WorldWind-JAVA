@@ -5,17 +5,37 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.Movable;
+import gov.nasa.worldwind.Restorable;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Cylinder;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.ExtentHolder;
+import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.MeasurableLength;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
 import gov.nasa.worldwind.util.measure.LengthMeasurer;
 
+import java.awt.Color;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.util.*;
+import javax.media.opengl.GL2;
 
 /**
  * @author tag
@@ -649,9 +669,9 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
 
     protected void drawOrderedRenderable(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        int attrBits = GL.GL_HINT_BIT | GL.GL_CURRENT_BIT | GL.GL_LINE_BIT;
+        int attrBits = GL2.GL_HINT_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LINE_BIT;
         if (!dc.isPickingMode())
         {
             if (this.color.getAlpha() != 255)
@@ -687,22 +707,22 @@ public class Polyline extends AVListImpl implements Renderable, OrderedRenderabl
 
             if (this.stippleFactor > 0)
             {
-                gl.glEnable(GL.GL_LINE_STIPPLE);
+                gl.glEnable(GL2.GL_LINE_STIPPLE);
                 gl.glLineStipple(this.stippleFactor, this.stipplePattern);
             }
             else
             {
-                gl.glDisable(GL.GL_LINE_STIPPLE);
+                gl.glDisable(GL2.GL_LINE_STIPPLE);
             }
 
             int hintAttr = GL.GL_LINE_SMOOTH_HINT;
             if (this.filled)
-                hintAttr = GL.GL_POLYGON_SMOOTH_HINT;
+                hintAttr = GL2.GL_POLYGON_SMOOTH_HINT;
             gl.glHint(hintAttr, this.antiAliasHint);
 
             int primType = GL.GL_LINE_STRIP;
             if (this.filled)
-                primType = GL.GL_POLYGON;
+                primType = GL2.GL_POLYGON;
 
             if (dc.isPickingMode())
                 gl.glLineWidth((float) this.lineWidth + 8);

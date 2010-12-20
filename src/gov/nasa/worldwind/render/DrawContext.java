@@ -6,23 +6,43 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.Model;
+import gov.nasa.worldwind.SceneController;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WWObject;
 import gov.nasa.worldwind.cache.TextureCache;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.terrain.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.layers.AnnotationLayer;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.pick.PickedObjectList;
+import gov.nasa.worldwind.terrain.SectorGeometryList;
+import gov.nasa.worldwind.terrain.Terrain;
+import gov.nasa.worldwind.util.PerformanceStatistic;
+import gov.nasa.worldwind.util.PickPointFrustumList;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.GLU;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.nio.FloatBuffer;
-import java.util.*;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLDrawable;
+import javax.media.opengl.glu.GLU;
+
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * @author Tom Gaskins
@@ -59,7 +79,7 @@ public interface DrawContext extends WWObject, Disposable
      *
      * @since 1.5
      */
-    GL getGL();
+    GL2 getGL();
 
     /**
      * Retrieves the current <code>javax.media.opengl.glu.GLU</code>. A <code>GLU</code> or <code>GL</code> is required

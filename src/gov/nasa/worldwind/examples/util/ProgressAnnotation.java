@@ -5,10 +5,13 @@ All Rights Reserved.
 package gov.nasa.worldwind.examples.util;
 
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.ScreenAnnotation;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -149,7 +152,7 @@ public class ProgressAnnotation extends ScreenAnnotation
     {
         java.awt.Rectangle bounds = this.computeProgressContainerBounds(width, height);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glEnable(GL.GL_LINE_SMOOTH);
         gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
         gl.glLineWidth(1);
@@ -170,7 +173,7 @@ public class ProgressAnnotation extends ScreenAnnotation
 
     protected void drawCallout(DrawContext dc, int mode, java.awt.Rectangle bounds, boolean useTexCoords)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler stackHandler = new OGLStackHandler();
         stackHandler.pushModelview(gl);

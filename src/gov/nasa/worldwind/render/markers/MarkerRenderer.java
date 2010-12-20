@@ -8,17 +8,26 @@ All Rights Reserved.
 package gov.nasa.worldwind.render.markers;
 
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sphere;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
-import java.awt.*;
-import java.util.*;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * @author tag
@@ -276,21 +285,21 @@ public class MarkerRenderer
 
     protected void begin(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         Vec4 cameraPosition = dc.getView().getEyePoint();
 
         if (dc.isPickingMode())
         {
             this.pickSupport.beginPicking(dc);
 
-            gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_TRANSFORM_BIT);
+            gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_TRANSFORM_BIT);
             gl.glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GLLightingFunc.GL_COLOR_MATERIAL);
         }
         else
         {
             gl.glPushAttrib(
-                GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_LIGHTING_BIT | GL.GL_TRANSFORM_BIT
+                GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LIGHTING_BIT | GL2.GL_TRANSFORM_BIT
                     | GL.GL_COLOR_BUFFER_BIT);
             gl.glDisable(GL.GL_TEXTURE_2D);
 
@@ -300,24 +309,24 @@ public class MarkerRenderer
             float[] lightAmbient = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
 
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GLLightingFunc.GL_COLOR_MATERIAL);
 
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, lightPosition, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, lightDiffuse, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_AMBIENT, lightAmbient, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_SPECULAR, lightSpecular, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_POSITION, lightPosition, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_DIFFUSE, lightDiffuse, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_AMBIENT, lightAmbient, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_SPECULAR, lightSpecular, 0);
 
-            gl.glDisable(GL.GL_LIGHT0);
-            gl.glEnable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glDisable(GLLightingFunc.GL_LIGHT0);
+            gl.glEnable(GLLightingFunc.GL_LIGHT1);
+            gl.glEnable(GLLightingFunc.GL_LIGHTING);
+            gl.glEnable(GLLightingFunc.GL_NORMALIZE);
 
             // Set up for opacity, either explictly via attributes or implicitly as alpha in the marker color
             dc.getGL().glEnable(GL.GL_BLEND);
             dc.getGL().glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
 
         // We're beginning a new sequence of marker rendering. Clear the previous attributes to ensure that no rendering
@@ -327,9 +336,9 @@ public class MarkerRenderer
 
     protected void end(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPopMatrix();
 
         if (dc.isPickingMode())
@@ -338,10 +347,10 @@ public class MarkerRenderer
         }
         else
         {
-            gl.glDisable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHT0);
-            gl.glDisable(GL.GL_LIGHTING);
-            gl.glDisable(GL.GL_NORMALIZE);
+            gl.glDisable(GLLightingFunc.GL_LIGHT1);
+            gl.glEnable(GLLightingFunc.GL_LIGHT0);
+            gl.glDisable(GLLightingFunc.GL_LIGHTING);
+            gl.glDisable(GLLightingFunc.GL_NORMALIZE);
         }
 
         gl.glPopAttrib();

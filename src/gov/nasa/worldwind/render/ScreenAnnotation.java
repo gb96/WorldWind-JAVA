@@ -6,10 +6,16 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 import javax.media.opengl.GL;
-import java.awt.*;
+import javax.media.opengl.GL2;
 
 /**
  * Represent a text label attached to a Point on the viewport and its rendering attributes.
@@ -199,7 +205,7 @@ public class ScreenAnnotation extends AbstractAnnotation
         if (dc.isPickingMode() && this.getPickSupport() == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glDepthFunc(GL.GL_ALWAYS);
 
         java.awt.Dimension size = this.getPreferredSize(dc);

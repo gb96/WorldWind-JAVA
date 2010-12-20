@@ -6,9 +6,15 @@ package gov.nasa.worldwind.examples.util;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.Annotation;
+import gov.nasa.worldwind.render.AnnotationAttributes;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.FrameFactory;
+import gov.nasa.worldwind.render.ScreenAnnotation;
+import gov.nasa.worldwind.render.WWTexture;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -244,7 +250,7 @@ public class ImageAnnotation extends ScreenAnnotation
         int magFilter = this.isEnableSmoothing() ?
             GL.GL_LINEAR : GL.GL_NEAREST;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, minFilter);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, magFilter);
     }
@@ -252,7 +258,7 @@ public class ImageAnnotation extends ScreenAnnotation
     protected void transformBackgroundImageCoordsToAnnotationCoords(DrawContext dc, int width, int height,
         WWTexture texture)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         // Scale background image coordinates to fit the Annotation's dimensions.
         java.awt.Dimension size = this.getImageSize(dc);

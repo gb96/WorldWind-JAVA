@@ -10,10 +10,13 @@ package gov.nasa.worldwind.util.tree;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLUtil;
 
-import javax.media.opengl.GL;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Rectangle;
+
+import javax.media.opengl.GL2;
 
 /**
  * Utility methods for drawing tree controls.
@@ -40,7 +43,7 @@ public class TreeUtil
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         Color color = dc.getUniquePickColor();
         int colorCode = color.getRGB();
@@ -56,7 +59,7 @@ public class TreeUtil
      * @param gl     GL
      * @param bounds Bounds of the rectangle, in GL coordinates.
      */
-    public static void drawRect(GL gl, Rectangle bounds)
+    public static void drawRect(GL2 gl, Rectangle bounds)
     {
         if (gl == null)
         {
@@ -75,7 +78,7 @@ public class TreeUtil
         gl.glRecti(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
     }
 
-    public static void drawRectWithGradient(GL gl, Rectangle bounds, Color color1, Color color2, double opacity, String gradientDirection)
+    public static void drawRectWithGradient(GL2 gl, Rectangle bounds, Color color1, Color color2, double opacity, String gradientDirection)
     {
         if (gl == null)
         {
@@ -93,8 +96,8 @@ public class TreeUtil
 
         try
         {
-            gl.glPushAttrib(GL.GL_CURRENT_BIT);
-            gl.glBegin(GL.GL_QUADS);
+            gl.glPushAttrib(GL2.GL_CURRENT_BIT);
+            gl.glBegin(GL2.GL_QUADS);
 
             if (AVKey.HORIZONTAL.equals(gradientDirection))
             {

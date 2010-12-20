@@ -62,7 +62,8 @@ public class GliderWorldWindow extends WorldWindowGLCanvas
 
         this.firePropertyChange(GliderImage.GLIDER_IMAGE_SOURCE, null, image);
 
-        this.repaint();
+        Logging.logger().finest("display()");
+        this.display(); // repaint();
     }
 
     /**
@@ -126,7 +127,7 @@ public class GliderWorldWindow extends WorldWindowGLCanvas
         public void propertyChange(PropertyChangeEvent evt)
         {
             GliderWorldWindow.this.firePropertyChange(GliderImage.GLIDER_IMAGE_SOURCE, null, this);
-            GliderWorldWindow.this.repaint();
+            GliderWorldWindow.this.display();
         }
     }
 }

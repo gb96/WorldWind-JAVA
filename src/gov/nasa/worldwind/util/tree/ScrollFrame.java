@@ -7,21 +7,39 @@
 
 package gov.nasa.worldwind.util.tree;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import com.sun.opengl.util.texture.TextureCoords;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.BasicWWTexture;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.FrameFactory;
+import gov.nasa.worldwind.render.Offset;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.render.Size;
+import gov.nasa.worldwind.util.HotSpot;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.OGLUtil;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.net.URL;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.net.URL;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * A frame that can scroll its contents.
@@ -301,7 +319,7 @@ public class ScrollFrame extends DragControl implements Renderable
     {
         this.drawFrame(dc);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glEnable(GL.GL_SCISSOR_TEST);
         gl.glScissor(this.contentBounds.x, this.contentBounds.y, this.contentBounds.width, this.contentBounds.height);
 
@@ -310,12 +328,12 @@ public class ScrollFrame extends DragControl implements Renderable
 
     protected void drawMinimized(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler oglStack = new OGLStackHandler();
         try
         {
-            oglStack.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL.GL_CURRENT_BIT);
+            oglStack.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL2.GL_CURRENT_BIT);
             oglStack.pushModelviewIdentity(gl);
 
             FrameAttributes attributes = this.getActiveAttributes();
@@ -363,12 +381,12 @@ public class ScrollFrame extends DragControl implements Renderable
 
     protected void drawFrame(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler oglStack = new OGLStackHandler();
         try
         {
-            oglStack.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL.GL_CURRENT_BIT);
+            oglStack.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT | GL2.GL_CURRENT_BIT);
 
             oglStack.pushModelviewIdentity(gl);
 
@@ -451,7 +469,7 @@ public class ScrollFrame extends DragControl implements Renderable
 
     protected void drawTitleBar(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         FrameAttributes attributes = this.getActiveAttributes();
 
@@ -480,7 +498,7 @@ public class ScrollFrame extends DragControl implements Renderable
             OGLStackHandler oglStack = new OGLStackHandler();
             try
             {
-                oglStack.pushAttrib(gl, GL.GL_CURRENT_BIT | GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT);
+                oglStack.pushAttrib(gl, GL2.GL_CURRENT_BIT | GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT);
 
                 gl.glEnable(GL.GL_TEXTURE_2D);
 
@@ -535,7 +553,7 @@ public class ScrollFrame extends DragControl implements Renderable
 
     protected void drawMinimizeButton(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler oglStack = new OGLStackHandler();
         try
@@ -584,19 +602,19 @@ public class ScrollFrame extends DragControl implements Renderable
 
     protected void beginRendering(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         GLU glu = dc.getGLU();
 
         this.oglStackHandler.pushAttrib(gl, GL.GL_DEPTH_BUFFER_BIT
             | GL.GL_COLOR_BUFFER_BIT
-            | GL.GL_ENABLE_BIT
-            | GL.GL_CURRENT_BIT
-            | GL.GL_SCISSOR_BIT);
+            | GL2.GL_ENABLE_BIT
+            | GL2.GL_CURRENT_BIT
+            | GL2.GL_SCISSOR_BIT);
 
         gl.glEnable(GL.GL_BLEND);
         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
         gl.glEnable(GL.GL_LINE_SMOOTH);
-        gl.glEnable(GL.GL_POLYGON_SMOOTH);
+        gl.glEnable(GL2.GL_POLYGON_SMOOTH);
         gl.glDisable(GL.GL_DEPTH_TEST);
 
         // Load a parallel projection with xy dimensions (viewportWidth, viewportHeight)
@@ -623,7 +641,7 @@ public class ScrollFrame extends DragControl implements Renderable
             this.pickSupport.resolvePick(dc, dc.getPickPoint(), dc.getCurrentLayer());
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.oglStackHandler.pop(gl);
     }
 

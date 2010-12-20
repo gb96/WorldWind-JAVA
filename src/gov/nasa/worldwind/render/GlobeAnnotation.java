@@ -6,12 +6,23 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.Locatable;
+import gov.nasa.worldwind.Movable;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+import gov.nasa.worldwind.util.WWMath;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Rectangle;
 
 import javax.media.opengl.GL;
-import java.awt.*;
+import javax.media.opengl.GL2;
 
 /**
  * Represent a text label attached to a Position on the globe and its rendering attributes.
@@ -349,7 +360,7 @@ public class GlobeAnnotation extends AbstractAnnotation implements Locatable, Mo
 
     protected void setDepthFunc(DrawContext dc, Vec4 screenPoint)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         Position eyePos = dc.getView().getEyePosition();
         if (eyePos == null)

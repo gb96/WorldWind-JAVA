@@ -6,16 +6,26 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.geom.Rectangle2D;
 
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.awt.geom.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * Renders a scalebar graphic in a screen corner.
@@ -325,7 +335,7 @@ public class ScalebarLayer extends AbstractLayer
 	// Rendering
     public void draw(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
@@ -335,11 +345,11 @@ public class ScalebarLayer extends AbstractLayer
         {
             gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT
                 | GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TEXTURE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT
-                | GL.GL_CURRENT_BIT);
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TEXTURE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT
+                | GL2.GL_CURRENT_BIT);
             attribsPushed = true;
 
             gl.glDisable(GL.GL_TEXTURE_2D);		// no textures
@@ -354,14 +364,14 @@ public class ScalebarLayer extends AbstractLayer
             // Load a parallel projection with xy dimensions (viewportWidth, viewportHeight)
             // into the GL projection matrix.
             java.awt.Rectangle viewport = dc.getView().getViewport();
-            gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+            gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadIdentity();
             double maxwh = width > height ? width : height;
             gl.glOrtho(0d, viewport.width, 0d, viewport.height, -0.6 * maxwh, 0.6 * maxwh);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             gl.glLoadIdentity();
@@ -462,12 +472,12 @@ public class ScalebarLayer extends AbstractLayer
         {
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (attribsPushed)
@@ -478,8 +488,8 @@ public class ScalebarLayer extends AbstractLayer
     // Draw scale rectangle
     private void drawRectangle(DrawContext dc, double width, double height)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_POLYGON);
+        GL2 gl = dc.getGL();
+        gl.glBegin(GL2.GL_POLYGON);
         gl.glVertex3d(0, height ,0);
         gl.glVertex3d(0, 0 ,0);
         gl.glVertex3d(width, 0 ,0);
@@ -491,7 +501,7 @@ public class ScalebarLayer extends AbstractLayer
     // Draw scale graphic
     private void drawScale(DrawContext dc, double width, double height)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glBegin(GL.GL_LINE_STRIP);
         gl.glVertex3d(0, height ,0);
         gl.glVertex3d(0, 0 ,0);

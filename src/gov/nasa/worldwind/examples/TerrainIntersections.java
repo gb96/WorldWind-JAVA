@@ -621,16 +621,16 @@ public class TerrainIntersections extends ApplicationTemplate
 //            @Override
 //            protected void doRender(DrawContext dc)
 //            {
-//                GL gl = dc.getGL();
+//                GL2 gl = dc.getGL();
 //                OGLStackHandler ogsh = new OGLStackHandler();
 //
 //                boolean projectionOffsetPushed = false; // keep track for error recovery
 //
 //                try
 //                {
-//                    ogsh.pushAttrib(gl, GL.GL_CURRENT_BIT | GL.GL_POLYGON_BIT);
-//                    ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-//                    gl.glEnableClientState(GL.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
+//                    ogsh.pushAttrib(gl, GL2.GL_CURRENT_BIT | GL2.GL_POLYGON_BIT);
+//                    ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+//                    gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
 //
 //                    if (!dc.isPickingMode())
 //                    {

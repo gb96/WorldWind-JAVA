@@ -7,10 +7,16 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.geom;
 
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.BufferWrapper;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.WWMath;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * An arbitralily oriented box, typically used as a oriented bounding volume for a collection of points or shapes. A
@@ -736,9 +742,9 @@ public class Box implements Extent, Renderable
         Vec4 c = this.s.add3(this.t).multiply3(0.5);
         Vec4 d = this.t.subtract3(this.s).multiply3(0.5);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_CURRENT_BIT | GL.GL_ENABLE_BIT | GL.GL_TRANSFORM_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        ogsh.pushAttrib(gl, GL2.GL_CURRENT_BIT | GL2.GL_ENABLE_BIT | GL2.GL_TRANSFORM_BIT | GL.GL_DEPTH_BUFFER_BIT);
         try
         {
             gl.glLineWidth(1f);
@@ -764,7 +770,7 @@ public class Box implements Extent, Renderable
     {
         Vec4 e = a.add3(this.r);
         Vec4 f = d.add3(this.r);
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         dc.getView().pushReferenceCenter(dc, this.bottomCenter);
         OGLStackHandler ogsh = new OGLStackHandler();
@@ -804,7 +810,7 @@ public class Box implements Extent, Renderable
 
     protected void drawOutline(DrawContext dc, Vec4 a, Vec4 b, Vec4 c, Vec4 d)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glBegin(GL.GL_LINE_LOOP);
         gl.glVertex3d(a.x, a.y, a.z);
         gl.glVertex3d(b.x, b.y, b.z);

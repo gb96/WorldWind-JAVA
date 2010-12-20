@@ -6,19 +6,46 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.formats.shapefile;
 
-import com.sun.opengl.util.BufferUtil;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.formats.worldfile.WorldFile;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.util.BufferWrapper;
+import gov.nasa.worldwind.util.CompoundVecBuffer;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.VecBuffer;
+import gov.nasa.worldwind.util.VecBufferBlocks;
+import gov.nasa.worldwind.util.VecBufferSequence;
+import gov.nasa.worldwind.util.WWBufferUtil;
+import gov.nasa.worldwind.util.WWIO;
+import gov.nasa.worldwind.util.WWUtil;
 
-import java.io.*;
-import java.net.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * Parses an ESRI Shapefile (.shp) and provides access to its contents. For details on the Shapefile format see the ESRI
@@ -1477,7 +1504,7 @@ public class Shapefile extends AVListImpl implements Closeable
                 DoubleBuffer doubleBuffer;
                 try
                 {
-                    doubleBuffer = BufferUtil.newDoubleBuffer(2 * totalPointsEstimate);
+                    doubleBuffer = Buffers.newDirectDoubleBuffer(2 * totalPointsEstimate);
                 }
                 catch (OutOfMemoryError e)
                 {

@@ -5,17 +5,28 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.Movable;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.SurfaceTileDrawContext;
+
+import java.awt.Color;
+import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.awt.geom.*;
-import java.util.*;
-import java.util.List;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * Renders an icon image over the terrain surface.
@@ -511,46 +522,46 @@ public class SurfaceIcon extends AbstractSurfaceRenderable implements Movable
 
     protected void beginDraw(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        int attributeMask = GL.GL_TRANSFORM_BIT // for modelview
-            | GL.GL_CURRENT_BIT // for current color
+        int attributeMask = GL2.GL_TRANSFORM_BIT // for modelview
+            | GL2.GL_CURRENT_BIT // for current color
             | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-            | GL.GL_TEXTURE_BIT // for texture env
-            | GL.GL_ENABLE_BIT; // for enable/disable changes
+            | GL2.GL_TEXTURE_BIT // for texture env
+            | GL2.GL_ENABLE_BIT; // for enable/disable changes
         gl.glPushAttrib(attributeMask);
 
         // Suppress any fully transparent image pixels
-        gl.glEnable(GL.GL_ALPHA_TEST);
+        gl.glEnable(GL2ES1.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
 
         gl.glMatrixMode(GL.GL_TEXTURE);
         gl.glPushMatrix();
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
 
         if (dc.isPickingMode())
         {
             // Set up to replace the non-transparent texture colors with the single pick color.
             gl.glEnable(GL.GL_TEXTURE_2D);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, GL.GL_PREVIOUS);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_REPLACE);
+            gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_COMBINE);
+            gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_SRC0_RGB, GL2ES1.GL_PREVIOUS);
+            gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_COMBINE_RGB, GL.GL_REPLACE);
         }
         else
         {
             gl.glEnable(GL.GL_TEXTURE_2D);
             gl.glEnable(GL.GL_BLEND);
             gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
+            gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_MODULATE);
         }
     }
 
     protected void endDraw(DrawContext dc)
     {
-        GL gl = dc.getGL();
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        GL2 gl = dc.getGL();
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPopMatrix();
 
         gl.glMatrixMode(GL.GL_TEXTURE);
@@ -568,7 +579,7 @@ public class SurfaceIcon extends AbstractSurfaceRenderable implements Movable
         Vec4 point = new Vec4(location.getLongitude().degrees + offset, location.getLatitude().degrees, 1);
         point = point.transformBy4(sdc.getModelviewMatrix());
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         // Translate to location point
         gl.glTranslated(point.x(), point.y(), point.z());
         // Add x scaling transform to maintain icon width and aspect ratio at any latitude
@@ -604,8 +615,8 @@ public class SurfaceIcon extends AbstractSurfaceRenderable implements Movable
 
     protected void drawIcon(DrawContext dc, SurfaceTileDrawContext sdc)
     {
-        GL gl = dc.getGL();
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        GL2 gl = dc.getGL();
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         double drawScale = this.computeDrawScale(dc, sdc, this.location);
         this.applyDrawTransform(dc, sdc, this.location, drawScale);
         gl.glScaled(this.imageWidth, this.imageHeight, 1d);

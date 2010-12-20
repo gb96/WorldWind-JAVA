@@ -7,19 +7,33 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWUtil;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.net.URL;
 
 import javax.media.opengl.GL;
-import javax.xml.stream.*;
-import java.awt.*;
-import java.io.*;
-import java.net.URL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * Draws an image parallel to the screen at a specified screen location relative to the World Window. If no image is
@@ -536,7 +550,7 @@ public class ScreenImage implements Renderable, Exportable
         if (this.screenLocation == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
@@ -546,28 +560,28 @@ public class ScreenImage implements Renderable, Exportable
         {
             gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT
                 | GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TEXTURE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT
-                | GL.GL_CURRENT_BIT);
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TEXTURE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT
+                | GL2.GL_CURRENT_BIT);
             attribsPushed = true;
 
             // Don't depth buffer.
             gl.glDisable(GL.GL_DEPTH_TEST);
 
             // Suppress any fully transparent image pixels
-            gl.glEnable(GL.GL_ALPHA_TEST);
+            gl.glEnable(GL2ES1.GL_ALPHA_TEST);
             gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
 
             java.awt.Rectangle viewport = dc.getView().getViewport();
-            gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+            gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadIdentity();
             gl.glOrtho(0d, viewport.width, 0d, viewport.height, -1, 1);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             gl.glLoadIdentity();
@@ -639,12 +653,12 @@ public class ScreenImage implements Renderable, Exportable
         {
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (attribsPushed)

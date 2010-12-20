@@ -7,10 +7,14 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render.airspaces;
 
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.render.ShapeAttributes;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * A container for common attributes applied to renderable shapes.
@@ -304,7 +308,7 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
 
         this.applyMaterial(dc, this.getOutlineMaterial(), this.getOutlineOpacity(), enableMaterial);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glLineWidth((float) this.getOutlineWidth());
     }
 
@@ -358,7 +362,7 @@ public class BasicAirspaceAttributes implements AirspaceAttributes
 
     protected void applyMaterial(DrawContext dc, Material material, double opacity, boolean enableMaterial)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (material != null)
         {

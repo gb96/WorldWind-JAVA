@@ -10,13 +10,24 @@ package gov.nasa.worldwind.render.airspaces;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.Cacheable;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.GeometryBuilder;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.media.opengl.GL;
-import java.util.*;
+import javax.media.opengl.GL2;
 
 /**
  * @author tag
@@ -239,7 +250,7 @@ public class Polygon extends AbstractAirspace
         this.setExpiryTime(this.nextExpiryTime(dc, terrainConformant));
         this.clearElevationMap();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         dc.getView().pushReferenceCenter(dc, referenceCenter);
 
@@ -247,7 +258,7 @@ public class Polygon extends AbstractAirspace
         {
             if (enableCaps && !this.isAirspaceCollapsed())
             {
-                gl.glPushAttrib(GL.GL_POLYGON_BIT);
+                gl.glPushAttrib(GL2.GL_POLYGON_BIT);
                 gl.glEnable(GL.GL_CULL_FACE);
                 gl.glFrontFace(GL.GL_CCW);
             }

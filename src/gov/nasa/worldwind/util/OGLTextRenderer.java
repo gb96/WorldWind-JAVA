@@ -4,8 +4,9 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.util;
 
-import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.render.TextRendererCache;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author dcollins

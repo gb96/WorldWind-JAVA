@@ -4,18 +4,38 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.cache.Cacheable;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Box;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.SurfaceTileDrawContext;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.util.*;
-import java.util.List;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 
 /**
  * Abstract implementation of SurfaceObject that participates in the {@link gov.nasa.worldwind.SceneController}'s bulk
@@ -677,14 +697,14 @@ public abstract class AbstractSurfaceObject extends AVListImpl implements Surfac
             return;
 
         // Draw the pickable representation of this surface object created during preRendering.
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_POLYGON_BIT); // For cull face enable, cull face, polygon mode.
+        ogsh.pushAttrib(gl, GL2.GL_POLYGON_BIT); // For cull face enable, cull face, polygon mode.
         try
         {
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_FILL);
 
             dc.getGeographicSurfaceTileRenderer().renderTiles(dc, this.pickTiles);
         }
@@ -706,7 +726,7 @@ public abstract class AbstractSurfaceObject extends AVListImpl implements Surfac
      */
     protected SurfaceObjectTileBuilder createPickTileBuilder()
     {
-        return new SurfaceObjectTileBuilder(new Dimension(512, 512), GL.GL_ALPHA8, false, false);
+        return new SurfaceObjectTileBuilder(new Dimension(512, 512), GL2.GL_ALPHA8, false, false);
     }
 
     //**************************************************************//
@@ -730,12 +750,12 @@ public abstract class AbstractSurfaceObject extends AVListImpl implements Surfac
         if (sectors == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         int attributeMask =
             GL.GL_COLOR_BUFFER_BIT   // For alpha test enable, blend enable, alpha func, blend func.
-                | GL.GL_CURRENT_BIT  // For current color.
-                | GL.GL_LINE_BIT;    // For line smooth, line width.
+                | GL2.GL_CURRENT_BIT  // For current color.
+                | GL2.GL_LINE_BIT;    // For line smooth, line width.
 
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushAttrib(gl, attributeMask);

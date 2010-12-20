@@ -17,7 +17,7 @@ public enum VPFDataType
     NULL(VPFConstants.NULL, 0, new VPFBasicDataBufferFactory.NullDataFactory()),
     DATE_AND_TIME(VPFConstants.DATE_AND_TIME, 20, new VPFBasicDataBufferFactory.DateTimeDataFactory()),
     TRIPLET_ID(VPFConstants.TRIPLET_ID, -1, new VPFBasicDataBufferFactory.TripledIdDataFactory()),
-    TEXT(VPFConstants.TEXT, 1, new VPFBasicDataBufferFactory.TextDataFactory("US-ASCII")),
+    T(VPFConstants.TEXT, 1, new VPFBasicDataBufferFactory.TextDataFactory("US-ASCII")),
     TEXT_L1(VPFConstants.TEXT_L1, 1, new VPFBasicDataBufferFactory.TextDataFactory("ISO-8859-1")),
     TEXT_L2(VPFConstants.TEXT_L2, 1, new VPFBasicDataBufferFactory.TextDataFactory("ISO_6937-2-add")),
     TEXT_L3(VPFConstants.TEXT_L3, 1, new VPFBasicDataBufferFactory.TextDataFactory("ISO-10646")),

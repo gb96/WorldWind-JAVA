@@ -5,20 +5,34 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
-import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.WWMath;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 import javax.media.opengl.glu.GLU;
-import java.awt.*;
-import java.awt.geom.*;
-import java.io.IOException;
-import java.util.*;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author dcollins
@@ -558,28 +572,28 @@ public class GeographicTextRenderer
 
     protected void beginRendering(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         int attribBits =
-            GL.GL_ENABLE_BIT // for enable/disable changes
+            GL2.GL_ENABLE_BIT // for enable/disable changes
                 | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-                | GL.GL_CURRENT_BIT      // for current color
+                | GL2.GL_CURRENT_BIT      // for current color
                 | GL.GL_DEPTH_BUFFER_BIT // for depth test, depth func, and depth mask
-                | GL.GL_TRANSFORM_BIT    // for modelview and perspective
-                | GL.GL_VIEWPORT_BIT;    // for depth range
+                | GL2.GL_TRANSFORM_BIT    // for modelview and perspective
+                | GL2.GL_VIEWPORT_BIT;    // for depth range
         gl.glPushAttrib(attribBits);
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPushMatrix();
         gl.glLoadIdentity();
         glu.gluOrtho2D(0, dc.getView().getViewport().width, 0, dc.getView().getViewport().height);
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
         gl.glLoadIdentity();
         gl.glMatrixMode(GL.GL_TEXTURE);
         gl.glPushMatrix();
         gl.glLoadIdentity();
         // Set model view as current matrix mode
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
 
 
         // Enable the depth test but don't write to the depth buffer.
@@ -590,7 +604,7 @@ public class GeographicTextRenderer
         gl.glDisable(GL.GL_CULL_FACE);
 
         // Suppress any fully transparent image pixels
-        gl.glEnable(GL.GL_ALPHA_TEST);
+        gl.glEnable(GL2ES1.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
 
         // Cache distance scaling values
@@ -607,11 +621,11 @@ public class GeographicTextRenderer
             this.lastTextRenderer = null;
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPopMatrix();
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPopMatrix();
         gl.glMatrixMode(GL.GL_TEXTURE);
         gl.glPopMatrix();
@@ -629,7 +643,7 @@ public class GeographicTextRenderer
         }
 
         GeographicText geographicText = uText.text;
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         final CharSequence charSequence = geographicText.getText();
         if (charSequence == null)
@@ -754,7 +768,7 @@ public class GeographicTextRenderer
     @SuppressWarnings({"UnusedDeclaration"})
     protected void setDepthFunc(DrawContext dc, OrderedText uText, Vec4 screenPoint)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         //if (uText.text.isAlwaysOnTop())
         //{

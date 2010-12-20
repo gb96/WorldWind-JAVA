@@ -8,15 +8,21 @@ All Rights Reserved.
 package gov.nasa.worldwind.render.markers;
 
 import gov.nasa.worldwind.Disposable;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
+import java.util.ArrayList;
+
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
-import java.util.ArrayList;
 
 /**
  * @author tag
@@ -177,7 +183,7 @@ public class BasicMarkerShape
                 if (glc == null)
                     return;
 
-                glc.getGL().glDeleteLists(this.glListId, 1);
+                glc.getGL().getGL2().glDeleteLists(this.glListId, 1);
 
                 this.glListId = -1;
             }
@@ -236,7 +242,7 @@ public class BasicMarkerShape
             int slices = 36;
             int stacks = 18;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
             dc.getGLU().gluSphere(this.quadric, radius, slices, stacks);
             dc.getGL().glEndList();
 
@@ -263,7 +269,7 @@ public class BasicMarkerShape
             int stacks = 30;
             int loops = 2;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
             dc.getGLU().gluQuadricOrientation(quadric, GLU.GLU_OUTSIDE);
             dc.getGLU().gluCylinder(quadric, 1d, 0d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
             dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
@@ -302,7 +308,7 @@ public class BasicMarkerShape
             int stacks = 1;
             int loops = 1;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
             dc.getGLU().gluCylinder(quadric, 1d, 1d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
             dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
             dc.getGL().glTranslated(0, 0, 2);
@@ -340,7 +346,7 @@ public class BasicMarkerShape
             this.name = "Heading Line";
             this.shapeType = BasicMarkerShape.HEADING_LINE;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
             dc.getGL().glBegin(GL.GL_LINE_STRIP);
             dc.getGL().glNormal3f(0f, 1f, 0f);
             dc.getGL().glVertex3d(0, 0, 0);
@@ -353,7 +359,7 @@ public class BasicMarkerShape
 
         protected void doRender(DrawContext dc, Marker marker, Vec4 point, double size)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             MarkerAttributes attrs = marker.getAttributes();
 
             if (marker.getHeading() == null)
@@ -406,8 +412,8 @@ public class BasicMarkerShape
             this.name = "Heading Arrow";
             this.shapeType = BasicMarkerShape.HEADING_ARROW;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
-            dc.getGL().glBegin(GL.GL_POLYGON);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
+            dc.getGL().glBegin(GL2.GL_POLYGON);
             dc.getGL().glNormal3f(0f, 1f, 0f);
             dc.getGL().glVertex3d(-.5, 0, 0);
             dc.getGL().glVertex3d(0, 0, 1);
@@ -421,7 +427,7 @@ public class BasicMarkerShape
 
         protected void doRender(DrawContext dc, Marker marker, Vec4 point, double size)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             MarkerAttributes attrs = marker.getAttributes();
 
             if (marker.getHeading() == null)

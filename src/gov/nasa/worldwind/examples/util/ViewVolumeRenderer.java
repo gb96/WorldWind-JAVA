@@ -4,12 +4,18 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.examples.util;
 
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 
 import javax.media.opengl.GL;
-import java.awt.*;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -55,11 +61,11 @@ public class ViewVolumeRenderer
         Vec4 y = origin.add3(Vec4.UNIT_Y.transformBy4(modelviewInv).multiply3(this.getSize()));
         Vec4 z = origin.add3(Vec4.UNIT_Z.transformBy4(modelviewInv).multiply3(this.getSize()));
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_CURRENT_BIT
-            | GL.GL_LINE_BIT
-            | GL.GL_POINT_BIT);
+        ogsh.pushAttrib(gl, GL2.GL_CURRENT_BIT
+            | GL2.GL_LINE_BIT
+            | GL2.GL_POINT_BIT);
         try
         {
             gl.glEnable(GL.GL_BLEND);
@@ -87,10 +93,10 @@ public class ViewVolumeRenderer
 
     protected void drawClipVolume(DrawContext dc, Matrix modelview, Matrix projection, Rectangle viewport)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushAttrib(gl,
-            GL.GL_CURRENT_BIT | GL.GL_COLOR_BUFFER_BIT | GL.GL_LINE_BIT | GL.GL_ENABLE_BIT | GL.GL_DEPTH_BUFFER_BIT);
+            GL2.GL_CURRENT_BIT | GL.GL_COLOR_BUFFER_BIT | GL2.GL_LINE_BIT | GL2.GL_ENABLE_BIT | GL.GL_DEPTH_BUFFER_BIT);
         try
         {
             gl.glLineWidth(1f);
@@ -118,7 +124,7 @@ public class ViewVolumeRenderer
             new Vec4(viewport.width, viewport.height, 1));
         Vec4 far_ul = worldPointFromScreenPoint(dc, viewport, modelview, projection, new Vec4(0, viewport.height, 1));
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         // Draw the active view volume
         gl.glColor4ub((byte) 255, (byte) 255, (byte) 0, (byte) 128); // Above ground color is 50% transparent Yellow.
@@ -173,7 +179,7 @@ public class ViewVolumeRenderer
 
     protected static void drawLine(DrawContext dc, Vec4 a, Vec4 b)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glBegin(GL.GL_LINES);
         gl.glVertex3d(a.x, a.y, a.z);
         gl.glVertex3d(b.x, b.y, b.z);
@@ -182,8 +188,8 @@ public class ViewVolumeRenderer
 
     protected static void drawQuad(DrawContext dc, Vec4 ll, Vec4 lr, Vec4 ur, Vec4 ul)
     {
-        GL gl = dc.getGL();
-        gl.glBegin(GL.GL_QUADS);
+        GL2 gl = dc.getGL();
+        gl.glBegin(GL2.GL_QUADS);
         gl.glVertex3d(ll.x, ll.y, ll.z);
         gl.glVertex3d(lr.x, lr.y, lr.z);
         gl.glVertex3d(ur.x, ur.y, ur.z);
@@ -193,7 +199,7 @@ public class ViewVolumeRenderer
 
     protected static void drawTriangle(DrawContext dc, Vec4 a, Vec4 b, Vec4 c)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glBegin(GL.GL_TRIANGLES);
         gl.glVertex3d(a.x, a.y, a.z);
         gl.glVertex3d(b.x, b.y, b.z);

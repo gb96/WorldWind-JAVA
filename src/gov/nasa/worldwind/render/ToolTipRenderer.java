@@ -5,11 +5,20 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.OGLUtil;
+
+import java.awt.Color;
+import java.awt.Insets;
 
 import javax.media.opengl.GL;
-import java.awt.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author dcollins
@@ -294,7 +303,7 @@ public class ToolTipRenderer
         java.awt.Point screenPoint = this.adjustDrawPointToViewport(x, y, bgBounds, viewport);
         java.awt.geom.Point2D textTranslation = this.computeTextTranslation(dc, textBounds, attributes.getInsets());
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler stackHandler = new OGLStackHandler();
 
         stackHandler.pushModelview(gl);
@@ -322,13 +331,13 @@ public class ToolTipRenderer
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         int attribMask = GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, blend func
-            | GL.GL_CURRENT_BIT // for current color
-            | GL.GL_ENABLE_BIT // for enable/disable
-            | GL.GL_LINE_BIT // for line width
-            | GL.GL_TRANSFORM_BIT; // for matrix mode
+            | GL2.GL_CURRENT_BIT // for current color
+            | GL2.GL_ENABLE_BIT // for enable/disable
+            | GL2.GL_LINE_BIT // for line width
+            | GL2.GL_TRANSFORM_BIT; // for matrix mode
         stackHandler.pushAttrib(gl, attribMask);
 
         stackHandler.pushTextureIdentity(gl);
@@ -338,7 +347,7 @@ public class ToolTipRenderer
         stackHandler.pushModelviewIdentity(gl);
 
         // Enable the alpha test.
-        gl.glEnable(GL.GL_ALPHA_TEST);
+        gl.glEnable(GL2ES1.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
 
         // Enable blending in premultiplied color mode.
@@ -347,7 +356,7 @@ public class ToolTipRenderer
 
         gl.glDisable(GL.GL_CULL_FACE);
         gl.glDisable(GL.GL_DEPTH_TEST);
-        gl.glDisable(GL.GL_LIGHTING);
+        gl.glDisable(GLLightingFunc.GL_LIGHTING);
         gl.glDisable(GL.GL_TEXTURE_2D);
     }
 
@@ -360,7 +369,7 @@ public class ToolTipRenderer
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         stackHandler.pop(gl);
     }
@@ -371,7 +380,7 @@ public class ToolTipRenderer
 
     protected void drawToolTipInterior(DrawContext dc, double width, double height, ToolTipAttributes attributes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         this.applyColor(dc, attributes.getInteriorColor(), attributes.getInteriorOpacity());
 
@@ -381,7 +390,7 @@ public class ToolTipRenderer
 
     protected void drawToolTipOutline(DrawContext dc, double width, double height, ToolTipAttributes attributes)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         this.applyColor(dc, attributes.getOutlineColor(), attributes.getOutlineOpacity());
         gl.glLineWidth((float) getOutlineWidth());

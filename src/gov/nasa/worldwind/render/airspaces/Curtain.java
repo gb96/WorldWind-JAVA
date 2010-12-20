@@ -9,13 +9,23 @@ package gov.nasa.worldwind.render.airspaces;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.Cacheable;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.media.opengl.GL;
-import java.util.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
 
 /**
  * A curtain is a series of adjacent rectangular planes. The upper edges of the planes are the connecting line segments
@@ -253,20 +263,20 @@ public class Curtain extends AbstractAirspace
         this.setExpiryTime(this.nextExpiryTime(dc, terrainConformant));
         this.clearElevationMap();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         dc.getView().pushReferenceCenter(dc, referenceCenter);
 
         if (Airspace.DRAW_STYLE_FILL.equals(drawStyle))
         {
             int[] lightModelTwoSide = new int[1];
-            gl.glGetIntegerv(GL.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide, 0);
-            gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
+            gl.glGetIntegerv(GL2ES1.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide, 0);
+            gl.glLightModeli(GL2ES1.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
 
             this.drawCurtainFill(dc, count, locationArray, pathType, splitThreshold, altitudes, terrainConformant,
                 referenceCenter);
 
-            gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide[0]);
+            gl.glLightModeli(GL2ES1.GL_LIGHT_MODEL_TWO_SIDE, lightModelTwoSide[0]);
         }
         else if (Airspace.DRAW_STYLE_OUTLINE.equals(drawStyle))
         {

@@ -6,22 +6,54 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.terrain;
 
-import com.sun.opengl.util.BufferUtil;
-import com.sun.opengl.util.j2d.TextRenderer;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WWObjectImpl;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.cache.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.cache.BasicMemoryCache;
+import gov.nasa.worldwind.cache.MemoryCache;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Cylinder;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Plane;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Triangle;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLTextRenderer;
 
-import javax.media.opengl.*;
-import java.awt.*;
-import java.nio.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
+
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author tag
@@ -296,7 +328,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                         //Delete the old buffer
                         int glBuf[] = new int[1];
                         glBuf[0] = ri.bufferIdVertices;
-                        glc.getGL().glDeleteBuffers(1, glBuf, 0);
+                        glc.getGL().getGL2().glDeleteBuffers(1, glBuf, 0);
                     }
                 }
             });
@@ -504,7 +536,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         //Re-use the RenderInfo vertices buffer. If it has not been set or the density has changed, create a new buffer
         if (tile.ri == null || tile.ri.vertices == null || density != tile.ri.density)
         {
-            verts = BufferUtil.newDoubleBuffer(numVertices * 3);
+            verts = Buffers.newDirectDoubleBuffer(numVertices * 3);
         }
         else
         {
@@ -549,13 +581,13 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         //Vertex Buffer Objects are supported in versions 1.5 and greater
         if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             OGLStackHandler ogsh = new OGLStackHandler();
 
             try
             {
-                ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+                ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
                 //Create a new bufferId
                 int glBuf[] = new int[1];
@@ -657,53 +689,53 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         dc.getView().pushReferenceCenter(dc, tile.ri.referenceCenter);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+            ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
-            gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
                 //Use VBO's
                 gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tile.ri.bufferIdVertices);
-                gl.glVertexPointer(3, GL.GL_DOUBLE, 0, 0);
+                gl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, 0);
 
                 for (int i = 0; i < numTextureUnits; i++)
                 {
                     gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                    gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
 
                     gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tile.ri.bufferIdTexCoords);
-                    gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, 0);
+                    gl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, 0);
                 }
 
                 gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, tile.ri.bufferIdIndicies);
 
-                gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(),
-                    javax.media.opengl.GL.GL_UNSIGNED_INT, 0);
+                gl.glDrawElements(GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(),
+                    GL.GL_UNSIGNED_INT, 0);
             }
             else
             {
                 //Use Vertex Arrays
-                gl.glVertexPointer(3, GL.GL_DOUBLE, 0, tile.ri.vertices.rewind());
+                gl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, tile.ri.vertices.rewind());
 
                 for (int i = 0; i < numTextureUnits; i++)
                 {
                     gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-                    gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+                    gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
                     Object texCoords = dc.getValue(AVKey.TEXTURE_COORDINATES);
                     if (texCoords != null && texCoords instanceof DoubleBuffer)
-                        gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, ((DoubleBuffer) texCoords).rewind());
+                        gl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, ((DoubleBuffer) texCoords).rewind());
                     else
-                        gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, tile.ri.texCoords.rewind());
+                        gl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, tile.ri.texCoords.rewind());
                 }
 
-                gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(),
-                    javax.media.opengl.GL.GL_UNSIGNED_INT, tile.ri.indices.rewind());
+                gl.glDrawElements(GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(),
+                    GL.GL_UNSIGNED_INT, tile.ri.indices.rewind());
             }
         }
         finally
@@ -733,17 +765,17 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         dc.getView().pushReferenceCenter(dc, tile.ri.referenceCenter);
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glPushAttrib(
-            GL.GL_DEPTH_BUFFER_BIT | GL.GL_POLYGON_BIT | GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT);
+            GL.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
         gl.glEnable(GL.GL_BLEND);
         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-        gl.glDisable(javax.media.opengl.GL.GL_DEPTH_TEST);
-        gl.glEnable(javax.media.opengl.GL.GL_CULL_FACE);
-        gl.glCullFace(javax.media.opengl.GL.GL_BACK);
-        gl.glDisable(javax.media.opengl.GL.GL_TEXTURE_2D);
+        gl.glDisable(GL.GL_DEPTH_TEST);
+        gl.glEnable(GL.GL_CULL_FACE);
+        gl.glCullFace(GL.GL_BACK);
+        gl.glDisable(GL.GL_TEXTURE_2D);
         gl.glColor4d(1d, 1d, 1d, 0.2);
-        gl.glPolygonMode(javax.media.opengl.GL.GL_FRONT, javax.media.opengl.GL.GL_LINE);
+        gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_LINE);
 
         if (showTriangles)
         {
@@ -751,13 +783,13 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
             try
             {
-                ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+                ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
-                gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+                gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
 
-                gl.glVertexPointer(3, GL.GL_DOUBLE, 0, tile.ri.vertices.rewind());
-                gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(),
-                    javax.media.opengl.GL.GL_UNSIGNED_INT, tile.ri.indices.rewind());
+                gl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, tile.ri.vertices.rewind());
+                gl.glDrawElements(GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(),
+                    GL.GL_UNSIGNED_INT, tile.ri.indices.rewind());
             }
             finally
             {
@@ -775,10 +807,10 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected void renderPatchBoundary(DrawContext dc, RectTile tile)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
 
-        ogsh.pushAttrib(gl, GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_POLYGON_BIT);
+        ogsh.pushAttrib(gl, GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_POLYGON_BIT);
         try
         {
             gl.glDisable(GL.GL_BLEND);
@@ -788,12 +820,12 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             gl.glDisable(GL.GL_DEPTH_TEST);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_LINE);
+            gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_LINE);
 
             Vec4[] corners = tile.sector.computeCornerPoints(dc.getGlobe(), dc.getVerticalExaggeration());
 
             gl.glColor4d(1d, 0, 0, 1d);
-            gl.glBegin(javax.media.opengl.GL.GL_QUADS);
+            gl.glBegin(GL2.GL_QUADS);
             gl.glVertex3d(corners[0].x, corners[0].y, corners[0].z);
             gl.glVertex3d(corners[1].x, corners[1].y, corners[1].z);
             gl.glVertex3d(corners[2].x, corners[2].y, corners[2].z);
@@ -822,12 +854,12 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(),
             java.awt.Font.decode("Arial-Plain-15"));
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushAttrib(gl, GL.GL_ENABLE_BIT);
+            ogsh.pushAttrib(gl, GL2.GL_ENABLE_BIT);
 
             dc.getGL().glDisable(GL.GL_DEPTH_TEST);
             dc.getGL().glDisable(GL.GL_BLEND);
@@ -919,7 +951,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         tile.ri.vertices.rewind();
         tile.ri.indices.rewind();
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (null != tile.ri.referenceCenter)
             dc.getView().pushReferenceCenter(dc, tile.ri.referenceCenter);
@@ -943,8 +975,8 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         else
         {
             //Otherwise create new buffers
-            colorsOdd = BufferUtil.newByteBuffer(verticesSize);
-            colorsEven = BufferUtil.newByteBuffer(verticesSize);
+            colorsOdd = Buffers.newDirectByteBuffer(verticesSize);
+            colorsEven = Buffers.newDirectByteBuffer(verticesSize);
 
             oddRowColorList.put(density, colorsOdd);
             evenRowColorList.put(density, colorsEven);
@@ -989,10 +1021,10 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         try
         {
-            ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+            ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
-            gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-            gl.glEnableClientState(GL.GL_COLOR_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_COLOR_ARRAY);
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
@@ -1025,7 +1057,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
                 gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tile.ri.bufferIdVertices);
-                gl.glVertexPointer(3, GL.GL_DOUBLE, 0, 0);
+                gl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, 0);
 
                 int sideWidth = density + 2;
                 int trianglesPerRow = sideWidth * 2 + 4;
@@ -1038,8 +1070,8 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
                 for (int i = 0; i < sideWidth; i += 2)
                 {
-                    gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        javax.media.opengl.GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
+                    gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
+                        GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
                 }
 
                 //Draw the even rows
@@ -1048,13 +1080,13 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
                 for (int i = 1; i < sideWidth - 1; i += 2)
                 {
-                    gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        javax.media.opengl.GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
+                    gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
+                        GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
                 }
             }
             else
             {
-                gl.glVertexPointer(3, GL.GL_DOUBLE, 0, tile.ri.vertices.rewind());
+                gl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, tile.ri.vertices.rewind());
 
                 tile.ri.indices.rewind();
 
@@ -1066,16 +1098,16 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
                 for (int i = 0; i < sideWidth; i += 2)
                 {
-                    gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        javax.media.opengl.GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
+                    gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
+                        GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
                 }
 
                 //Draw the even rows
                 gl.glColorPointer(3, GL.GL_UNSIGNED_BYTE, 0, evenRowColorList.get(tile.ri.density).rewind());
                 for (int i = 1; i < sideWidth - 1; i += 2)
                 {
-                    gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        javax.media.opengl.GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
+                    gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
+                        GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
                 }
             }
         }
@@ -1649,7 +1681,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             density = 1;
 
         int coordCount = (density + 3) * (density + 3);
-        DoubleBuffer p = BufferUtil.newDoubleBuffer(2 * coordCount);
+        DoubleBuffer p = Buffers.newDirectDoubleBuffer(2 * coordCount);
 
         double deltaLat = rt.sector.getDeltaLatRadians() / density;
         double deltaLon = rt.sector.getDeltaLonRadians() / density;
@@ -1741,7 +1773,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         final double one = 0.999999;
 
         int coordCount = (density + 3) * (density + 3);
-        DoubleBuffer p = BufferUtil.newDoubleBuffer(2 * coordCount);
+        DoubleBuffer p = Buffers.newDirectDoubleBuffer(2 * coordCount);
         double delta = 1d / density;
         int k = 2 * (density + 3);
         for (int j = 0; j < density; j++)
@@ -1802,13 +1834,13 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             p.put(k++, p.get(kk++));
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+            ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
@@ -1855,7 +1887,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         int sideSize = density + 2;
 
         int indexCount = 2 * sideSize * sideSize + 4 * sideSize - 2;
-        java.nio.IntBuffer buffer = BufferUtil.newIntBuffer(indexCount);
+        java.nio.IntBuffer buffer = Buffers.newDirectIntBuffer(indexCount);
         int k = 0;
         for (int i = 0; i < sideSize; i++)
         {
@@ -1890,13 +1922,13 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         buffer.rewind();
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler ogsh = new OGLStackHandler();
 
         try
         {
-            ogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+            ogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
@@ -2266,7 +2298,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 //        double centerY = referenceCenter.y;
 //        double centerZ = referenceCenter.z;
 //        // Create normal buffer
-//        java.nio.DoubleBuffer normals = BufferUtil.newDoubleBuffer(numVertices * 3);
+//        java.nio.DoubleBuffer normals = Buffers.newDirectDoubleBuffer(numVertices * 3);
 //        // Create per vertex normal lists
 //        ArrayList<ArrayList<Vec4>> normalLists = new ArrayList<ArrayList<Vec4>>(numVertices);
 //        for (int i = 0; i < numVertices; i++)

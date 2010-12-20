@@ -4,16 +4,28 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.examples.analytics;
 
-import com.sun.opengl.util.j2d.*;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.render.ScreenImage;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.WWMath;
+import gov.nasa.worldwind.util.WWUtil;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.text.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.text.Format;
+import java.util.ArrayList;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author dcollins

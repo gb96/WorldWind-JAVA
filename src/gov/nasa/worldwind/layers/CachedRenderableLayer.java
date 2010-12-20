@@ -7,14 +7,21 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.layers;
 
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.Locatable;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.GeographicExtent;
+import gov.nasa.worldwind.render.PreRenderable;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.BasicQuadTree;
+import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
 import java.util.Collection;
+
+import javax.media.opengl.GL2ES1;
 
 /**
  * Holds a collection of Renderables and manages local caching of them. Provides searching for Renderables by sector,
@@ -281,7 +288,7 @@ public class CachedRenderableLayer extends AbstractLayer
                 if (renderable != null)
                 {
                     float[] inColor = new float[4];
-                    dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, inColor, 0);
+                    dc.getGL().glGetFloatv(GL2ES1.GL_CURRENT_COLOR, inColor, 0);
                     java.awt.Color color = dc.getUniquePickColor();
                     dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
 

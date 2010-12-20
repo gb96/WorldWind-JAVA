@@ -6,21 +6,39 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.layers.Mercator;
 
-import com.sun.opengl.util.texture.*;
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.cache.*;
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.cache.BasicMemoryCache;
+import gov.nasa.worldwind.cache.MemoryCache;
 import gov.nasa.worldwind.formats.dds.DDSConverter;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.retrieve.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.retrieve.HTTPRetriever;
+import gov.nasa.worldwind.retrieve.RetrievalPostProcessor;
+import gov.nasa.worldwind.retrieve.Retriever;
+import gov.nasa.worldwind.retrieve.URLRetriever;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWIO;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
-import java.awt.image.*;
-import java.io.*;
-import java.net.*;
-import java.nio.ByteBuffer;
+import javax.media.opengl.GLProfile;
+
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * BasicTiledImageLayer modified 2009-02-03 to add support for Mercator projections.
@@ -200,7 +218,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
     {
         try
         {
-            return TextureIO.newTextureData(url, useMipMaps, null);
+            return TextureIO.newTextureData(GLProfile.getDefault(), url, useMipMaps, null);
         }
         catch (Exception e)
         {

@@ -10,16 +10,42 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.TextureCache;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.terrain.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.pick.PickedObjectList;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.DrawContextImpl;
+import gov.nasa.worldwind.render.GLRuntimeCapabilities;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.render.PreRenderable;
+import gov.nasa.worldwind.render.ScreenCreditController;
+import gov.nasa.worldwind.render.SurfaceObjectTileBuilder;
+import gov.nasa.worldwind.render.SurfaceTile;
+import gov.nasa.worldwind.render.TextRendererCache;
+import gov.nasa.worldwind.terrain.SectorGeometry;
+import gov.nasa.worldwind.terrain.SectorGeometryList;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.PerformanceStatistic;
 
-import javax.media.opengl.*;
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * @author tag
@@ -337,15 +363,15 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             throw new IllegalStateException(message);
         }
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glPushAttrib(GL.GL_VIEWPORT_BIT | GL.GL_ENABLE_BIT | GL.GL_TRANSFORM_BIT);
+        gl.glPushAttrib(GL2.GL_VIEWPORT_BIT | GL2.GL_ENABLE_BIT | GL2.GL_TRANSFORM_BIT);
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
@@ -361,12 +387,12 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
     protected void finalizeFrame(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPopMatrix();
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPopMatrix();
 
         gl.glPopAttrib();
@@ -515,8 +541,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         }
         else if (pickedObjectsList != null && (pickedObjectsList.size() > 1))
         {
-            java.nio.ByteBuffer pixel = com.sun.opengl.util.BufferUtil.newByteBuffer(3);
-            GL gl = dc.getGL();
+            java.nio.ByteBuffer pixel = Buffers.newDirectByteBuffer(3);
+            GL2 gl = dc.getGL();
             int yInGLCoords = dc.getView().getViewport().height - dc.getPickPoint().y - 1;
             gl.glReadPixels(dc.getPickPoint().x, yInGLCoords, 1, 1,
                 GL.GL_RGB,
@@ -680,7 +706,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
                 Model model = dc.getModel();
 
                 float[] previousColor = new float[4];
-                dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, previousColor, 0);
+                dc.getGL().glGetFloatv(GL2ES1.GL_CURRENT_COLOR, previousColor, 0);
 
                 for (SectorGeometry sg : dc.getSurfaceGeometry())
                 {
@@ -713,7 +739,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
     @SuppressWarnings({"UNUSED_SYMBOL", "UnusedDeclaration"})
     protected void checkGLErrors(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         for (int err = gl.glGetError(); err != GL.GL_NO_ERROR; err = gl.glGetError())
         {
@@ -832,9 +858,9 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
         int attributeMask =
             GL.GL_COLOR_BUFFER_BIT   // For alpha test enable, blend enable, alpha func, blend func, blend ref.
-                | GL.GL_POLYGON_BIT; // For cull face enable, cull face, polygon mode.
+                | GL2.GL_POLYGON_BIT; // For cull face enable, cull face, polygon mode.
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
         ogsh.pushAttrib(gl, attributeMask);
         try
@@ -842,7 +868,7 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             gl.glEnable(GL.GL_BLEND);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_FILL);
             // Enable blending in premultiplied color mode. The color components in each surface object tile are
             // premultiplied by the alpha component.
             OGLUtil.applyBlending(gl, true);

@@ -6,11 +6,13 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind;
 
+import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.view.orbit.OrbitView;
-import gov.nasa.worldwind.geom.Angle;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
 
 /**
  * Allows for stereo anaglyph display mode.
@@ -65,7 +67,7 @@ public class AnaglyphSceneController extends AbstractSceneController
 
     public void doRepaint(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.initializeFrame(dc);
         try
         {
@@ -90,7 +92,7 @@ public class AnaglyphSceneController extends AbstractSceneController
                 view.apply(dc);
                 // Draw right eye frame green and blue only
                 gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
-                gl.glDisable(GL.GL_FOG);
+                gl.glDisable(GL2ES1.GL_FOG);
                 gl.glColorMask(false, true, true, true); // right eye in green/blue
                 this.draw(dc);
                 // Restore original view heading

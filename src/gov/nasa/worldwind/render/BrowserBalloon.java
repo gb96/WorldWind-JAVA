@@ -5,21 +5,43 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwind.util.webview.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.util.AbstractResizeHotSpot;
+import gov.nasa.worldwind.util.HotSpot;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.webview.WebView;
+import gov.nasa.worldwind.util.webview.WebViewFactory;
 
-import javax.media.opengl.GL;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Point2D;
 import java.net.URL;
 import java.nio.DoubleBuffer;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
 
 /**
  * A {@link Balloon} that renders HTML.
@@ -397,25 +419,25 @@ public class BrowserBalloon extends AbstractBalloon implements OrderedRenderable
 
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         int attrMask =
             GL.GL_COLOR_BUFFER_BIT // For alpha enable, blend enable, alpha func, blend func.
-                | GL.GL_CURRENT_BIT // For current color
-                | GL.GL_ENABLE_BIT // For depth test disable.
+                | GL2.GL_CURRENT_BIT // For current color
+                | GL2.GL_ENABLE_BIT // For depth test disable.
                 | GL.GL_DEPTH_BUFFER_BIT
-                | GL.GL_LINE_BIT // For outline width.
-                | GL.GL_TEXTURE_BIT; // For texture enable, texture gen enable, texture binding, texture gen mode, texture gen plane equations.
+                | GL2.GL_LINE_BIT // For outline width.
+                | GL2.GL_TEXTURE_BIT; // For texture enable, texture gen enable, texture binding, texture gen mode, texture gen plane equations.
 
         this.osh.pushAttrib(gl, attrMask);
-        this.osh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT); // For vertex array enable, vertex array pointers.
+        this.osh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT); // For vertex array enable, vertex array pointers.
         this.osh.pushProjectionIdentity(gl);
         // The browser balloon is drawn using a parallel projection sized to fit the viewport.
         gl.glOrtho(0d, dc.getView().getViewport().width, 0d, dc.getView().getViewport().height, -1d, 1d);
         this.osh.pushTextureIdentity(gl);
         this.osh.pushModelviewIdentity(gl);
 
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY); // All drawing uses vertex arrays.
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY); // All drawing uses vertex arrays.
 
         if (!dc.isPickingMode())
         {
@@ -432,7 +454,7 @@ public class BrowserBalloon extends AbstractBalloon implements OrderedRenderable
 
     protected void setupDepthTest(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!this.isAlwaysOnTop() && GLOBE_MODE.equals(this.getAttachmentMode())
             && dc.getView().getEyePosition().getElevation() < (dc.getGlobe().getMaxElevation()
@@ -455,7 +477,7 @@ public class BrowserBalloon extends AbstractBalloon implements OrderedRenderable
 
     protected void doDrawOrderedRenderable(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isDeepPickingEnabled())
             this.setupDepthTest(dc);
@@ -481,7 +503,7 @@ public class BrowserBalloon extends AbstractBalloon implements OrderedRenderable
         // Translate to the balloon's screen origin and bind the balloon's vertex buffer as source of GL vertex data.
         // Use integer coordinates to ensure that the image texels are aligned exactly with screen pixels.
         gl.glTranslatef(this.screenRect.x, this.screenRect.y, 0);
-        gl.glVertexPointer(2, GL.GL_DOUBLE, 0, this.vertexBuffer);
+        gl.glVertexPointer(2, GL2GL3.GL_DOUBLE, 0, this.vertexBuffer);
 
         if (!dc.isPickingMode())
         {
@@ -523,7 +545,7 @@ public class BrowserBalloon extends AbstractBalloon implements OrderedRenderable
      */
     protected void pickResizeControls(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         gl.glDisable(GL.GL_TEXTURE_2D);
         gl.glLineWidth((float) this.resizePickWidth);
@@ -592,26 +614,26 @@ public class BrowserBalloon extends AbstractBalloon implements OrderedRenderable
         if (!texture.bind(dc))
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         // The WebView's texture is successfully bound. Enable GL texturing and set up the texture environment to apply
         // the texture in decal mode. Decal mode uses the texture color where the texture's alpha is 1, and uses the
         // balloon's background color where it's 0. The texture's internal format must be RGBA to work correctly, and we
         // assume that the WebView's texture format is RGBA.
         gl.glEnable(GL.GL_TEXTURE_2D);
-        gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL);
+        gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_DECAL);
 
         // Set up GL automatic texture coordinate generation to define texture coordinates equivalent to the balloon's
         // vertex coordinates in object space. The balloon's vertices are defined in screen coordinates, so the
         // generated texture coordinates are equivalent to the vertex coordinates. We transform texture coordinates from
         // screen space into WebView texture space below by applying the appropriate transforms on the texture matrix
         // stack.
-        gl.glEnable(GL.GL_TEXTURE_GEN_S);
-        gl.glEnable(GL.GL_TEXTURE_GEN_T);
-        gl.glTexGeni(GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR);
-        gl.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR);
-        gl.glTexGenfv(GL.GL_S, GL.GL_OBJECT_PLANE, new float[] {1, 0, 0, 0}, 0);
-        gl.glTexGenfv(GL.GL_T, GL.GL_OBJECT_PLANE, new float[] {0, 1, 0, 0}, 0);
+        gl.glEnable(GL2.GL_TEXTURE_GEN_S);
+        gl.glEnable(GL2.GL_TEXTURE_GEN_T);
+        gl.glTexGeni(GL2.GL_S, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+        gl.glTexGeni(GL2.GL_T, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+        gl.glTexGenfv(GL2.GL_S, GL2.GL_OBJECT_PLANE, new float[] {1, 0, 0, 0}, 0);
+        gl.glTexGenfv(GL2.GL_T, GL2.GL_OBJECT_PLANE, new float[] {0, 1, 0, 0}, 0);
 
         // Translate texture coordinates to place the WebView's texture in the WebView's screen rectangle. Use integer
         // coordinates when possible to ensure that the image texels are aligned exactly with screen pixels. This

@@ -61,17 +61,17 @@ import java.net.URL;
  *          if (dc.isPickingMode())
  *              return;
  *          <br/>
- *          GL gl = dc.getGL();
+ *          GL2 gl = dc.getGL();
  *          gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT // For alpha enable, blend enable, alpha func, blend func.
- *              | GL.GL_ENABLE_BIT // For depth test disable.
- *              | GL.GL_TEXTURE_BIT // For texture enable, texture binding.
- *              | GL.GL_TRANSFORM_BIT); // For matrix mode.
- *          gl.glMatrixMode(GL.GL_PROJECTION);
+ *              | GL2.GL_ENABLE_BIT // For depth test disable.
+ *              | GL2.GL_TEXTURE_BIT // For texture enable, texture binding.
+ *              | GL2.GL_TRANSFORM_BIT); // For matrix mode.
+ *          gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
  *          gl.glPushMatrix();
  *          gl.glLoadIdentity();
  *          // Drawn in a parallel projection sized to fit the viewport.
  *          gl.glOrtho(0d, dc.getView().getViewport().width, 0d, dc.getView().getViewport().height, -1d, 1d);
- *          gl.glMatrixMode(GL.GL_MODELVIEW);
+ *          gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
  *          gl.glPushMatrix();
  *          gl.glLoadIdentity();
  *          // Don't do depth comparisons or update the depth buffer.
@@ -94,7 +94,7 @@ import java.net.URL;
  *          // is placed at the screen point. Use integer coordinates to ensure that the image texels are aligned
  *          // exactly with screen pixels.
  *          TextureCoords texCoords = texture.getTexCoords();
- *          gl.glBegin(GL.GL_QUADS);
+ *          gl.glBegin(GL2.GL_QUADS);
  *          gl.glTexCoord2f(texCoords.left(), texCoords.bottom());
  *          gl.glVertex2i(0, 0);
  *          gl.glTexCoord2f(texCoords.right(), texCoords.bottom());
@@ -105,9 +105,9 @@ import java.net.URL;
  *          gl.glVertex2i(0, this.screenSize.height);
  *          gl.glEnd();
  *          <br/>
- *          gl.glMatrixMode(GL.GL_MODELVIEW);
+ *          gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
  *          gl.glPopMatrix();
- *          gl.glMatrixMode(GL.GL_PROJECTION);
+ *          gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
  *          gl.glPopMatrix();
  *          gl.glPopAttrib();
  *      }

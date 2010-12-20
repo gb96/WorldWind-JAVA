@@ -6,28 +6,55 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.awt;
 
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.cache.*;
-import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.Model;
+import gov.nasa.worldwind.SceneController;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.WorldWindowGLDrawable;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.cache.BasicTextureCache;
+import gov.nasa.worldwind.cache.TextureCache;
+import gov.nasa.worldwind.event.InputHandler;
+import gov.nasa.worldwind.event.NoOpInputHandler;
+import gov.nasa.worldwind.event.PositionListener;
+import gov.nasa.worldwind.event.RenderingExceptionListener;
+import gov.nasa.worldwind.event.RenderingListener;
+import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.pick.PickedObjectList;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.PerformanceStatistic;
 
-import javax.media.opengl.*;
-import java.awt.*;
-import java.beans.*;
-import java.util.*;
+import java.awt.GraphicsDevice;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLCapabilitiesChooser;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLProfile;
+import javax.media.opengl.awt.GLCanvas;
+import javax.media.opengl.awt.GLJPanel;
 
 /**
  */
 public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, PropertyChangeListener
 {
-    private static final GLCapabilities caps = new GLCapabilities();
+  private static final GLCapabilities caps;
 
-    static
-    {
+  static
+  {
+        final GLProfile glProfile = GLProfile.getDefault();
+        Logging.logger().finest("GLProfile: " + glProfile);
+        caps = new GLCapabilities(GLProfile.getDefault());
+
         caps.setAlphaBits(8);
         caps.setRedBits(8);
         caps.setGreenBits(8);

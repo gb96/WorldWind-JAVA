@@ -7,21 +7,29 @@ All Rights Reserved.
 package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.cache.TextureCache;
-import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.event.PositionEvent;
+import gov.nasa.worldwind.event.RenderingEvent;
+import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.exception.WWAbsentRequirementException;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.render.ScreenCreditController;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.PerformanceStatistic;
 import gov.nasa.worldwind.util.dashboard.DashboardController;
 
-import javax.media.opengl.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
+
+import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLDrawable;
+import javax.media.opengl.GLEventListener;
+import javax.swing.Timer;
 
 /**
  * A non-platform specific {@link WorldWindow} class. This class can be aggregated into platform-specific classes to
@@ -32,10 +40,10 @@ import java.util.logging.Level;
  */
 public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldWindowGLDrawable, GLEventListener
 {
-    private GLAutoDrawable drawable;
+    GLAutoDrawable drawable;
     private DashboardController dashboard;
     private boolean shuttingDown = false;
-    private Timer redrawTimer;
+    Timer redrawTimer;
     private boolean firstInit = true;
 
     /** Construct a new <code>WorldWindowGLCanvase</code> for a specified {@link GLDrawable}. */
@@ -109,8 +117,10 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
             throw new IllegalArgumentException(msg);
         }
 
-        if (this.drawable != null)
-            this.drawable.repaint(); // Queue a JOGL repaint request.
+        if (this.drawable != null) {
+//          Logging.logger().finest("propertyChange: " + propertyChangeEvent.getPropertyName() + " changed from " + propertyChangeEvent.getOldValue() + " to " + propertyChangeEvent.getNewValue());
+//          this.drawable.display(); // repaint(); // Queue a JOGL repaint request.
+        }
     }
 
     protected String[] getRequiredOglFunctions()
@@ -229,7 +239,8 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
                     {
                         public void actionPerformed(ActionEvent actionEvent)
                         {
-                            drawable.repaint();
+                            Logging.logger().finest("Redraw Timer->GLAutoDrawable#display()");
+                            drawable.display(); // repaint();
                             redrawTimer = null;
                         }
                     });
@@ -337,13 +348,28 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
     @Override
     public void redraw()
     {
-        if (this.drawable != null)
-            this.drawable.repaint();
+        if (this.drawable != null) {
+          Logging.logger().finest("redraw()");
+          this.drawable.display(); // repaint();
+        }
     }
 
+    @Override
     public void redrawNow()
     {
-        if (this.drawable != null)
-            this.drawable.display();
+        if (this.drawable != null) {
+          Logging.logger().finest("redrawNow()");
+          this.drawable.display();
+        }
+    }
+
+    @Override
+    public void dispose(final GLAutoDrawable gLAutoDrawable) {
+      if (gLAutoDrawable != null) {
+        Logging.logger().finest("dispose()");
+// FIXME javax.media.nativewindow.NativeWindowException: Unable to lock surface
+//        at com.jogamp.nativewindow.impl.jawt.windows.WindowsJAWTWindow.lockSurfaceImpl(WindowsJAWTWindow.java:81)
+//        gLAutoDrawable.destroy();
+      }
     }
 }

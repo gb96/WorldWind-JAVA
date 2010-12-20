@@ -6,27 +6,64 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.examples;
 
-import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
-import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.event.SelectEvent;
+import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.examples.util.PowerOfTwoPaddedImage;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.layers.AnnotationLayer;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.pick.PickedObjectList;
+import gov.nasa.worldwind.render.Annotation;
+import gov.nasa.worldwind.render.AnnotationAttributes;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.FrameFactory;
+import gov.nasa.worldwind.render.GlobeAnnotation;
+import gov.nasa.worldwind.render.PatternFactory;
+import gov.nasa.worldwind.render.ScreenAnnotation;
+import gov.nasa.worldwind.render.ScreenRelativeAnnotation;
+import gov.nasa.worldwind.util.BasicDragger;
+import gov.nasa.worldwind.util.BrowserOpener;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.net.URL;
 
 import javax.media.opengl.GL;
-import javax.swing.*;
+import javax.media.opengl.GL2;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.net.URL;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author Patrick Murris
@@ -371,7 +408,7 @@ public class Annotations extends ApplicationTemplate
 
                 protected void applyScreenTransform(DrawContext dc, int x, int y, int width, int height, double scale)
                 {
-                    GL gl = dc.getGL();
+                    GL2 gl = dc.getGL();
                     gl.glTranslated(x, y, 0);
                     gl.glScaled(scale, scale, 1);
                 }
@@ -399,9 +436,9 @@ public class Annotations extends ApplicationTemplate
                     Color borderColor = this.getAttributes().getBorderColor();
                     this.applyColor(dc, borderColor, opacity, false);
                     // Draw 3x3 shape from its bottom left corner
-                    GL gl = dc.getGL();
+                    GL2 gl = dc.getGL();
                     gl.glDisable(GL.GL_LINE_SMOOTH);
-                    gl.glDisable(GL.GL_LINE_STIPPLE);
+                    gl.glDisable(GL2.GL_LINE_STIPPLE);
                     gl.glLineWidth(1);
                     dc.getGL().glTranslated(-1, -1, 0);
                     FrameFactory.drawShape(dc, FrameFactory.SHAPE_RECTANGLE, 3, 3, GL.GL_LINE_STRIP, 0);

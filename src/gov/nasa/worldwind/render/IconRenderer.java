@@ -6,20 +6,29 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
 import gov.nasa.worldwind.Locatable;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
 
-import javax.media.opengl.GL;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Rectangle;
 import java.util.Iterator;
 import java.util.logging.Level;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * IconRenderer processes collections of {@link gov.nasa.worldwind.render.WWIcon} instances for picking and rendering.
@@ -491,19 +500,19 @@ public class IconRenderer
 
     protected void beginDrawIcons(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         this.oglStackHandler.clear();
 
         int attributeMask =
             GL.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
-                | GL.GL_TRANSFORM_BIT // for modelview and perspective
-                | GL.GL_VIEWPORT_BIT // for depth range
-                | GL.GL_CURRENT_BIT // for current color
+                | GL2.GL_TRANSFORM_BIT // for modelview and perspective
+                | GL2.GL_VIEWPORT_BIT // for depth range
+                | GL2.GL_CURRENT_BIT // for current color
                 | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-                | GL.GL_TEXTURE_BIT // for texture env
+                | GL2.GL_TEXTURE_BIT // for texture env
                 | GL.GL_DEPTH_BUFFER_BIT // for depth func
-                | GL.GL_ENABLE_BIT; // for enable/disable changes
+                | GL2.GL_ENABLE_BIT; // for enable/disable changes
         this.oglStackHandler.pushAttrib(gl, attributeMask);
 
         // Apply the depth buffer but don't change it.
@@ -512,7 +521,7 @@ public class IconRenderer
         gl.glDepthMask(false);
 
         // Suppress any fully transparent image pixels
-        gl.glEnable(GL.GL_ALPHA_TEST);
+        gl.glEnable(GL2ES1.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
 
         // Load a parallel projection with dimensions (viewportWidth, viewportHeight)
@@ -528,9 +537,9 @@ public class IconRenderer
 
             // Set up to replace the non-transparent texture colors with the single pick color.
             gl.glEnable(GL.GL_TEXTURE_2D);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, GL.GL_PREVIOUS);
-            gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_REPLACE);
+            gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_COMBINE);
+            gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_SRC0_RGB, GL2ES1.GL_PREVIOUS);
+            gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_COMBINE_RGB, GL.GL_REPLACE);
         }
         else
         {
@@ -635,11 +644,11 @@ public class IconRenderer
             pedestalSpacing = 0d;
         }
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         this.setDepthFunc(dc, uIcon, screenPoint);
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glLoadIdentity();
 
         Dimension size = icon.getSize();
@@ -709,7 +718,7 @@ public class IconRenderer
     protected void applyBackground(DrawContext dc, WWIcon icon, Vec4 screenPoint, double width, double height,
         double pedestalSpacing, double pedestalScale)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         double backgroundScale;
         backgroundScale = icon.getBackgroundScale();
@@ -742,7 +751,7 @@ public class IconRenderer
 
     protected void setDepthFunc(DrawContext dc, OrderedIcon uIcon, Vec4 screenPoint)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (uIcon.icon.isAlwaysOnTop())
         {

@@ -4,11 +4,12 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -50,7 +51,7 @@ public abstract class AbstractAnnotationLayout implements AnnotationLayoutManage
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.stackHandler.pushModelview(gl);
     }
 
@@ -63,7 +64,7 @@ public abstract class AbstractAnnotationLayout implements AnnotationLayoutManage
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.stackHandler.pop(gl);
     }
 

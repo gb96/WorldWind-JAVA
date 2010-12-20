@@ -6,15 +6,26 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.geom.Vec4;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWIO;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.*;
-import java.nio.*;
+import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * Converts a star background based on a subset of ESA Hipparcos catalog to ByteBuffer.
@@ -207,7 +218,7 @@ public class StarsConvertor
 
             starsReader.close();
 
-            ByteBuffer buf = BufferUtil.newByteBuffer(tmpBuffer.size() * 4);
+            ByteBuffer buf = Buffers.newDirectByteBuffer(tmpBuffer.size() * 4);
             buf.order(ByteOrder.LITTLE_ENDIAN);
             FloatBuffer fBuf = buf.asFloatBuffer();
 

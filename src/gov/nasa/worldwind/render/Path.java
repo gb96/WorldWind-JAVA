@@ -7,26 +7,52 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
-import gov.nasa.worldwind.*;
+import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.Movable;
+import gov.nasa.worldwind.WWObjectImpl;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Box;
+import gov.nasa.worldwind.geom.Cylinder;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.ExtentHolder;
+import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.util.BufferWrapper;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLUtil;
 
-import javax.media.opengl.GL;
-import javax.xml.stream.*;
-import java.awt.*;
-import java.io.*;
-import java.nio.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import com.jogamp.common.nio.Buffers;
 
 // TODO: Measurement (getLength), Texture, maybe lighting
 
@@ -888,17 +914,17 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
      */
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        int attrMask = GL.GL_CURRENT_BIT
-            | GL.GL_LINE_BIT | GL.GL_HINT_BIT // for outline
-            | GL.GL_POLYGON_BIT // for interior
+        int attrMask = GL2.GL_CURRENT_BIT
+            | GL2.GL_LINE_BIT | GL2.GL_HINT_BIT // for outline
+            | GL2.GL_POLYGON_BIT // for interior
             | GL.GL_COLOR_BUFFER_BIT; // for blending
 
         gl.glPushAttrib(attrMask);
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
 
         if (!dc.isPickingMode())
         {
@@ -934,7 +960,7 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
      */
     protected void drawOutline(DrawContext dc, FloatBuffer path, List<Integer> poles)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         ShapeAttributes attrs = this.getActiveAttributes();
         boolean projectionOffsetPushed = false; // keep track for error recovery
 
@@ -956,7 +982,7 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
 
             if (attrs.getOutlineStippleFactor() > 0)
             {
-                gl.glEnable(GL.GL_LINE_STIPPLE);
+                gl.glEnable(GL2.GL_LINE_STIPPLE);
                 gl.glLineStipple(attrs.getOutlineStippleFactor(), attrs.getOutlineStipplePattern());
             }
 
@@ -1005,14 +1031,14 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
 
         int N = (pathToDraw.limit() / 3) / 2;
         int numPoints = poles.size() * 2;
-        IntBuffer indices = BufferUtil.newIntBuffer(numPoints);
+        IntBuffer indices = Buffers.newDirectIntBuffer(numPoints);
 
         for (Integer i : poles)
         {
             indices.put(i).put(i + N);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, pathToDraw.rewind());
         gl.glDrawElements(GL.GL_LINES, indices.limit(), GL.GL_UNSIGNED_INT, indices.rewind());
@@ -1026,7 +1052,7 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
      */
     protected void drawInterior(DrawContext dc, FloatBuffer path)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
@@ -1042,7 +1068,7 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
 
         int numPoints = path.limit() / 3;
         int numEdges = numPoints / 2;
-        IntBuffer indices = BufferUtil.newIntBuffer(numPoints);
+        IntBuffer indices = Buffers.newDirectIntBuffer(numPoints);
 
         int N = numPoints / 2;
         indices.put(0).put(N);
@@ -1108,7 +1134,7 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
         int numPoints = extrudeIt ? 2 * numPositions : numPositions;
 
         if (path == null || path.capacity() < numPoints * 3)
-            path = BufferUtil.newFloatBuffer(3 * numPoints);
+            path = Buffers.newDirectFloatBuffer(3 * numPoints);
 
         path.clear();
 
@@ -1146,7 +1172,7 @@ public class Path extends WWObjectImpl implements Highlightable, OrderedRenderab
         int numPoints = this.isExtrude() ? 2 * numPositions : numPositions;
 
         if (path == null || path.capacity() < numPoints * 3)
-            path = BufferUtil.newFloatBuffer(3 * numPoints);
+            path = Buffers.newDirectFloatBuffer(3 * numPoints);
 
         path.clear();
 

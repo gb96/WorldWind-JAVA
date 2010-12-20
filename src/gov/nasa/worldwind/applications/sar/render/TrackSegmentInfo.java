@@ -4,15 +4,32 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.applications.sar.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import gov.nasa.worldwind.applications.sar.*;
+import gov.nasa.worldwind.applications.sar.SAR2;
+import gov.nasa.worldwind.applications.sar.SARPosition;
+import gov.nasa.worldwind.applications.sar.SARTrack;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.MultiLineTextRenderer;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.WWMath;
+import gov.nasa.worldwind.util.WWUtil;
 
-import javax.media.opengl.GL;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
+
+import javax.media.opengl.GL2;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * @author dcollins
@@ -237,11 +254,11 @@ public class TrackSegmentInfo implements Renderable
 
         protected void drawText(DrawContext dc, String text, int x, int y, Font font, Color color)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             Rectangle viewport = dc.getView().getViewport();
 
             OGLStackHandler stackHandler = new OGLStackHandler();
-            stackHandler.pushAttrib(gl, GL.GL_CURRENT_BIT); // For current color.
+            stackHandler.pushAttrib(gl, GL2.GL_CURRENT_BIT); // For current color.
             try
             {
                 MultiLineTextRenderer tr = this.getTextRendererFor(dc, font);

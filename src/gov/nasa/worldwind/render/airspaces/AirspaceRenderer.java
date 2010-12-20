@@ -9,13 +9,22 @@ import gov.nasa.worldwind.Locatable;
 import gov.nasa.worldwind.geom.Extent;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.render.OutlinedShape;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.PerformanceStatistic;
 
-import javax.media.opengl.GL;
-import java.awt.*;
+import java.awt.Point;
 import java.nio.Buffer;
 import java.util.Iterator;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
 
 /**
  * @author dcollins
@@ -643,9 +652,9 @@ public class AirspaceRenderer
         {
             if (this.isEnableLighting())
             {
-                dc.getGL().glGetIntegerv(GL.GL_LIGHTING, lightEnabledState, 0);
+                dc.getGL().glGetIntegerv(GLLightingFunc.GL_LIGHTING, lightEnabledState, 0);
                 if (lightEnabledState[0] == GL.GL_TRUE)
-                    dc.getGL().glDisable(GL.GL_LIGHTING);
+                    dc.getGL().glDisable(GLLightingFunc.GL_LIGHTING);
             }
 
             airspace.getAttributes().applyOutline(dc, false);
@@ -655,38 +664,38 @@ public class AirspaceRenderer
 
         if (!dc.isPickingMode() && this.isEnableLighting() && lightEnabledState[0] == GL.GL_TRUE)
         {
-            dc.getGL().glEnable(GL.GL_LIGHTING);
+            dc.getGL().glEnable(GLLightingFunc.GL_LIGHTING);
         }
     }
 
     protected void beginRendering(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
 
         if (!dc.isPickingMode())
         {
             int attribMask =
-                (this.isEnableLighting() ? GL.GL_LIGHTING_BIT : 0) // For lighting, material, and matrix mode
+                (this.isEnableLighting() ? GL2.GL_LIGHTING_BIT : 0) // For lighting, material, and matrix mode
                     | GL.GL_COLOR_BUFFER_BIT
                     // For color write mask. If blending is enabled: for blending src and func, and alpha func.
-                    | GL.GL_CURRENT_BIT // For current color.
-                    | GL.GL_LINE_BIT // For line width, line smoothing.
-                    | GL.GL_POLYGON_BIT // For polygon mode, polygon offset.
-                    | GL.GL_TRANSFORM_BIT; // For matrix mode.
+                    | GL2.GL_CURRENT_BIT // For current color.
+                    | GL2.GL_LINE_BIT // For line width, line smoothing.
+                    | GL2.GL_POLYGON_BIT // For polygon mode, polygon offset.
+                    | GL2.GL_TRANSFORM_BIT; // For matrix mode.
             gl.glPushAttrib(attribMask);
 
             if (this.isDrawWireframe())
-                gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE);
+                gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2GL3.GL_LINE);
 
             if (this.isEnableBlending())
                 this.setBlending(dc);
 
             if (this.isEnableLighting())
             {
-                gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                gl.glEnableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
                 dc.beginStandardLighting();
             }
 
@@ -696,16 +705,16 @@ public class AirspaceRenderer
         else
         {
             int attribMask =
-                GL.GL_CURRENT_BIT // For current color.
+                GL2.GL_CURRENT_BIT // For current color.
 //                    | GL.GL_DEPTH_BUFFER_BIT // For depth test and depth func.
-                    | GL.GL_LINE_BIT; // For line width.
+                    | GL2.GL_LINE_BIT; // For line width.
             gl.glPushAttrib(attribMask);
         }
     }
 
     protected void endRendering(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         dc.endStandardLighting();
         gl.glPopAttrib();
@@ -759,7 +768,7 @@ public class AirspaceRenderer
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         int minElementIndex, maxElementIndex;
         int size, glType, stride;
@@ -779,7 +788,7 @@ public class AirspaceRenderer
                 normalBuffer = geom.getBuffer(Geometry.NORMAL);
                 if (normalBuffer == null)
                 {
-                    gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glDisableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
                 }
                 else
                 {
@@ -802,7 +811,7 @@ public class AirspaceRenderer
             if (this.isEnableLighting())
             {
                 if (normalBuffer == null)
-                    gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+                    gl.glEnableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
             }
             this.logGeometryStatistics(dc, geom);
         }
@@ -897,12 +906,12 @@ public class AirspaceRenderer
             throw new IllegalStateException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (this.isUseEXTBlendFuncSeparate())
             this.setHaveEXTBlendFuncSeparate(gl.isExtensionAvailable(EXT_BLEND_FUNC_SEPARATE_STRING));
 
-        gl.glEnable(GL.GL_ALPHA_TEST);
+        gl.glEnable(GL2ES1.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
 
         gl.glEnable(GL.GL_BLEND);

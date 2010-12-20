@@ -6,9 +6,10 @@ package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -283,7 +284,7 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
             align = getDefaultAlignment(AVKey.HORIZONTAL);
         }
         
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler stackHandler = new OGLStackHandler();
 
         for (Annotation annotation : annotations)
@@ -309,7 +310,7 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
             align = getDefaultAlignment(AVKey.VERTICAL);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler stackHandler = new OGLStackHandler();
 
         for (Annotation annotation : annotations)
@@ -329,7 +330,7 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
     @SuppressWarnings({"StringEquality"})
     protected void alignHorizontal(DrawContext dc, java.awt.Rectangle bounds, java.awt.Dimension size, String align)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (align == AVKey.BOTTOM)
         {
@@ -350,7 +351,7 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
     @SuppressWarnings({"StringEquality"})
     protected void alignVertical(DrawContext dc, java.awt.Rectangle bounds, java.awt.Dimension size, String align)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (align == AVKey.LEFT)
         {
@@ -370,13 +371,13 @@ public class AnnotationFlowLayout extends AbstractAnnotationLayout
 
     protected void beginHorizontal(DrawContext dc, java.awt.Rectangle bounds)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glTranslated(bounds.getMinX(), bounds.getMinY(), 0);
     }
 
     protected void beginVertical(DrawContext dc, java.awt.Rectangle bounds)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glTranslated(bounds.getMinX(), bounds.getMaxY(), 0);
     }
 }

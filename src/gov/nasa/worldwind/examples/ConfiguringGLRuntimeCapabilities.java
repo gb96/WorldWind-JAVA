@@ -44,7 +44,7 @@ public class ConfiguringGLRuntimeCapabilities extends ApplicationTemplate
 
     /**
      * Subclass of {@link gov.nasa.worldwind.WorldWindowGLAutoDrawable} which overrides the method override the method
-     * {@link gov.nasa.worldwind.WorldWindowGLAutoDrawable#init(javax.media.opengl.GLAutoDrawable)} to configure the
+     * {@link gov.nasa.worldwind.WorldWindowGLAutoDrawable#init(GLAutoDrawable)} to configure the
      * OpenGL features used by the World Wind SDK.
      */
     public static class MyGLAutoDrawable extends WorldWindowGLAutoDrawable

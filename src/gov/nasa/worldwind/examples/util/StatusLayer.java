@@ -6,24 +6,47 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.examples.util;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import com.sun.opengl.util.texture.*;
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.layers.AbstractLayer;
-import gov.nasa.worldwind.event.*;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.event.PositionEvent;
+import gov.nasa.worldwind.event.PositionListener;
+import gov.nasa.worldwind.event.RenderingEvent;
+import gov.nasa.worldwind.event.RenderingListener;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.geom.coords.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.geom.coords.MGRSCoord;
+import gov.nasa.worldwind.geom.coords.UTMCoord;
+import gov.nasa.worldwind.layers.AbstractLayer;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.WWMath;
 
-import javax.media.opengl.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.event.ActionListener;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+import javax.swing.Timer;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureCoords;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * @author jparsons
@@ -258,7 +281,7 @@ public class StatusLayer extends AbstractLayer implements PositionListener, Rend
 	// Rendering
 	public void draw(DrawContext dc)
 	{
-		GL gl = dc.getGL();
+		GL2 gl = dc.getGL();
 		boolean attribsPushed = false;
 		boolean modelviewPushed = false;
 		boolean projectionPushed = false;
@@ -266,11 +289,11 @@ public class StatusLayer extends AbstractLayer implements PositionListener, Rend
 		{
 			gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT
 					| GL.GL_COLOR_BUFFER_BIT
-					| GL.GL_ENABLE_BIT
-					| GL.GL_TEXTURE_BIT
-					| GL.GL_TRANSFORM_BIT
-					| GL.GL_VIEWPORT_BIT
-					| GL.GL_CURRENT_BIT);
+					| GL2.GL_ENABLE_BIT
+					| GL2.GL_TEXTURE_BIT
+					| GL2.GL_TRANSFORM_BIT
+					| GL2.GL_VIEWPORT_BIT
+					| GL2.GL_CURRENT_BIT);
 			attribsPushed = true;
 
 			gl.glDisable(GL.GL_TEXTURE_2D);		// no textures
@@ -282,7 +305,7 @@ public class StatusLayer extends AbstractLayer implements PositionListener, Rend
 			// Load a parallel projection with xy dimensions (viewportWidth, viewportHeight)
 			// into the GL projection matrix.
 			java.awt.Rectangle viewport = dc.getView().getViewport();
-			gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+			gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
 			gl.glPushMatrix();
 			projectionPushed = true;
 			gl.glLoadIdentity();
@@ -295,7 +318,7 @@ public class StatusLayer extends AbstractLayer implements PositionListener, Rend
                 double maxwh = size.width > size.height ? size.width : size.height;
                 gl.glOrtho(0d, viewport.width, 0d, viewport.height, -0.6 * maxwh, 0.6 * maxwh);
 
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glPushMatrix();
                 modelviewPushed = true;
                 gl.glLoadIdentity();
@@ -347,12 +370,12 @@ public class StatusLayer extends AbstractLayer implements PositionListener, Rend
 		{
 			if (projectionPushed)
 			{
-				gl.glMatrixMode(GL.GL_PROJECTION);
+				gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
 				gl.glPopMatrix();
 			}
 			if (modelviewPushed)
 			{
-				gl.glMatrixMode(GL.GL_MODELVIEW);
+				gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
 				gl.glPopMatrix();
 			}
 			if (attribsPushed)
@@ -475,11 +498,11 @@ public class StatusLayer extends AbstractLayer implements PositionListener, Rend
 
     private void drawFilledRectangle(DrawContext dc, Vec4 origin, Dimension dimension, Color color)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(),
             (byte) color.getBlue(), (byte) color.getAlpha());
         gl.glDisable(GL.GL_TEXTURE_2D);        // no textures
-        gl.glBegin(GL.GL_POLYGON);
+        gl.glBegin(GL2.GL_POLYGON);
         gl.glVertex3d(origin.x, origin.y, 0);
         gl.glVertex3d(origin.x + dimension.getWidth(), origin.y, 0);
         gl.glVertex3d(origin.x + dimension.getWidth(), origin.y + dimension.getHeight(), 0);

@@ -7,12 +7,16 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
-import java.awt.*;
+import java.awt.Point;
 import java.nio.DoubleBuffer;
+
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * Static class for drawing 2D frames.
@@ -147,11 +151,11 @@ public class FrameFactory
             throw new IllegalArgumentException(message);
         }
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         // Set up
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glVertexPointer(2, GL.GL_DOUBLE, 0, verts);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
+        gl.glVertexPointer(2, GL2GL3.GL_DOUBLE, 0, verts);
         // Draw
         gl.glDrawArrays(mode, 0, count);
         // Restore
@@ -182,13 +186,13 @@ public class FrameFactory
             throw new IllegalArgumentException(message);
         }
         
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         // Set up
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
-        gl.glVertexPointer(2, GL.GL_DOUBLE, 0, verts);
-        gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, coords);
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
+        gl.glVertexPointer(2, GL2GL3.GL_DOUBLE, 0, verts);
+        gl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, coords);
         // Draw
         gl.glDrawArrays(mode, 0, count);
         // Restore
@@ -397,7 +401,7 @@ public class FrameFactory
             buffer.clear();
 
         if (buffer == null || buffer.capacity() < numCoords)
-            buffer = BufferUtil.newDoubleBuffer(numCoords);
+            buffer = Buffers.newDirectDoubleBuffer(numCoords);
 
         return buffer;
     }

@@ -1,14 +1,20 @@
 package gov.nasa.worldwind.applications.sar;
 
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.render.airspaces.Polygon;
-import gov.nasa.worldwind.render.WWTexture;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.render.BasicWWTexture;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.WWTexture;
+import gov.nasa.worldwind.render.airspaces.Polygon;
 import gov.nasa.worldwind.util.OGLStackHandler;
 
-import javax.media.opengl.GL;
 import java.util.List;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * Renders a textured plane at a given elevation.
@@ -98,13 +104,13 @@ public class ElevationPlane extends Polygon
     protected void beginRendering(DrawContext dc)
     {
         // TODO: review attributes
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         osh.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT // for alpha func
-            | GL.GL_ENABLE_BIT
-            | GL.GL_CURRENT_BIT
+            | GL2.GL_ENABLE_BIT
+            | GL2.GL_CURRENT_BIT
             | GL.GL_DEPTH_BUFFER_BIT // for depth func
-            | GL.GL_TEXTURE_BIT // for texture env
-            | GL.GL_TRANSFORM_BIT);
+            | GL2.GL_TEXTURE_BIT // for texture env
+            | GL2.GL_TRANSFORM_BIT);
         osh.pushTextureIdentity(gl);
     }
 
@@ -122,26 +128,26 @@ public class ElevationPlane extends Polygon
         if (!texture.bind(dc))
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         // Texture coordinates generation
         double[][] planes = this.computePlanes(dc);
         if (planes == null)
             return;
 
-        gl.glTexGeni(GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR);
-        gl.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR);
-        gl.glTexGendv(GL.GL_S, GL.GL_OBJECT_PLANE, planes[0], 0);
-        gl.glTexGendv(GL.GL_T, GL.GL_OBJECT_PLANE, planes[1], 0);
-        gl.glEnable(GL.GL_TEXTURE_GEN_S);
-        gl.glEnable(GL.GL_TEXTURE_GEN_T);
+        gl.glTexGeni(GL2.GL_S, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+        gl.glTexGeni(GL2.GL_T, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR);
+        gl.glTexGendv(GL2.GL_S, GL2.GL_OBJECT_PLANE, planes[0], 0);
+        gl.glTexGendv(GL2.GL_T, GL2.GL_OBJECT_PLANE, planes[1], 0);
+        gl.glEnable(GL2.GL_TEXTURE_GEN_S);
+        gl.glEnable(GL2.GL_TEXTURE_GEN_T);
         // Pattern scaling
-        gl.glMatrixMode(GL.GL_TEXTURE_MATRIX);
+        gl.glMatrixMode(GLMatrixFunc.GL_TEXTURE_MATRIX);
         gl.glScaled(1 / this.imageSize, 1 / this.imageSize, 1f);
         // Texture setup
         gl.glEnable(GL.GL_BLEND);
         gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
         gl.glEnable(GL.GL_TEXTURE_2D);
-        gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
+        gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_MODULATE);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
         // TODO: factor in polygon opacity?

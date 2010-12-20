@@ -6,17 +6,31 @@ All Rights Reserved.
  */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.Movable;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.gx.GXConstants;
 import gov.nasa.worldwind.util.Logging;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.media.opengl.GL;
-import javax.xml.stream.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Renders a single image contained in a local file or <code>BufferedImage</code>
@@ -246,7 +260,7 @@ public class SurfaceImage implements SurfaceTile, Renderable, PreRenderable, Mov
         if (this.sourceTexture == null)
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         try
         {
             if (!dc.isPickingMode())
@@ -256,23 +270,23 @@ public class SurfaceImage implements SurfaceTile, Renderable, PreRenderable, Mov
 
                 if (opacity < 1)
                 {
-                    gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT | GL.GL_CURRENT_BIT);
+                    gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_CURRENT_BIT);
                     // Enable blending using white premultiplied by the current opacity.
                     gl.glColor4d(opacity, opacity, opacity, opacity);
                 }
                 else
                 {
-                    gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_POLYGON_BIT);
+                    gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL2.GL_POLYGON_BIT);
                 }
                 gl.glEnable(GL.GL_BLEND);
                 gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
             }
             else
             {
-                gl.glPushAttrib(GL.GL_POLYGON_BIT);
+                gl.glPushAttrib(GL2.GL_POLYGON_BIT);
             }
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_FILL);
+            gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_FILL);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
 

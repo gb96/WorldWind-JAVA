@@ -5,13 +5,19 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.SurfaceTileDrawContext;
 
-import javax.media.opengl.GL;
-import java.awt.geom.*;
-import java.util.*;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * Renders an icon image over the terrain surface in many locations.
@@ -69,8 +75,8 @@ public class SurfaceIcons extends SurfaceIcon
         if (this.locations == null)
             return;
 
-        GL gl = dc.getGL();
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        GL2 gl = dc.getGL();
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         double drawScale = 1;
         TextureCoords textureCoords = new TextureCoords(0, 0, 1, 1);
 

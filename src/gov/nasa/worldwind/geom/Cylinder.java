@@ -7,12 +7,20 @@ All Rights Reserved.
 package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.WWMath;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.opengl.GL;
-import javax.media.opengl.glu.*;
-import java.util.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUquadric;
 
 /**
  * Represents a geometric cylinder, most often used as a bounding volume. <code>Cylinder</code>s are immutable.
@@ -850,10 +858,10 @@ public class Cylinder implements Extent, Renderable
         double[] matrixArray = new double[16];
         transformMatrix.toArray(matrixArray, 0, false);
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler ogsh = new OGLStackHandler();
-        ogsh.pushAttrib(gl, GL.GL_CURRENT_BIT | GL.GL_ENABLE_BIT | GL.GL_TRANSFORM_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        ogsh.pushAttrib(gl, GL2.GL_CURRENT_BIT | GL2.GL_ENABLE_BIT | GL2.GL_TRANSFORM_BIT | GL.GL_DEPTH_BUFFER_BIT);
         try
         {
             // The cylinder is drawn with as a wireframe plus a center axis. It's drawn in two passes in order to

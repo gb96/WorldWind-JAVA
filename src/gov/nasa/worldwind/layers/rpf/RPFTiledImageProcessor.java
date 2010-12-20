@@ -5,23 +5,39 @@ All Rights Reserved.
 package gov.nasa.worldwind.layers.rpf;
 
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.formats.dds.DDSCompressor;
-import gov.nasa.worldwind.formats.nitfs.*;
-import gov.nasa.worldwind.formats.rpf.*;
+import gov.nasa.worldwind.formats.nitfs.NITFSImageSegment;
+import gov.nasa.worldwind.formats.nitfs.NITFSSegmentType;
+import gov.nasa.worldwind.formats.rpf.RPFDataSeries;
+import gov.nasa.worldwind.formats.rpf.RPFFile;
+import gov.nasa.worldwind.formats.rpf.RPFFrameFileComponents;
+import gov.nasa.worldwind.formats.rpf.RPFFrameFilename;
+import gov.nasa.worldwind.formats.rpf.RPFFrameTransform;
+import gov.nasa.worldwind.formats.rpf.RPFImageFile;
 import gov.nasa.worldwind.formats.wvt.WaveletCodec;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.WWIO;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.beans.*;
-import java.io.*;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author dcollins

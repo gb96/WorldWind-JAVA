@@ -5,13 +5,21 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.util.webview;
 
-import com.sun.opengl.util.texture.*;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.BasicWWTexture;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.logging.Level;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.GLProfile;
+
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * @author dcollins
@@ -69,6 +77,7 @@ public class WebViewTexture extends BasicWWTexture
         {
             // Allocate a texture with the proper dimensions and texture internal format, but with no data.
             TextureData td = new TextureData(
+                GLProfile.getDefault(),
                 GL.GL_RGBA, // texture internal format
                 this.frameSize.width, // texture image with
                 this.frameSize.height, // texture image height
@@ -87,11 +96,11 @@ public class WebViewTexture extends BasicWWTexture
 
             // Configure the texture to use nearest-neighbor filtering. This ensures that the texels are aligned exactly
             // with screen pixels, and eliminates blurry artifacts from linear filtering.
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_BORDER);
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_BORDER);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL2GL3.GL_CLAMP_TO_BORDER);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL2GL3.GL_CLAMP_TO_BORDER);
         }
         catch (Exception e)
         {

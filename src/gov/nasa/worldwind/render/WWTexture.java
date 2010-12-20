@@ -7,7 +7,7 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * Represents a texture derived from an image source such as an image file or a {@link java.awt.image.BufferedImage}.

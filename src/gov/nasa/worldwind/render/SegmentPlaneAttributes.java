@@ -4,13 +4,20 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.util.Logging;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.util.*;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -573,7 +580,7 @@ public class SegmentPlaneAttributes
 
     protected static void applyMaterial(DrawContext dc, Material material, double opacity, boolean enableMaterial)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (enableMaterial)
         {
@@ -590,7 +597,7 @@ public class SegmentPlaneAttributes
 
     protected static void applyLineWidth(DrawContext dc, double lineWidth, double pickLineWidth)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (dc.isPickingMode())
         {

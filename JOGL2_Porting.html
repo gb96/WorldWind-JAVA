@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Strict//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>WorldWind JAVA -- JOGL2 Porting</title>
+</head>
+<body>
+
+<table border="1" cellspacing="0">
+<thead>
+<tr><td nowrap valign="top"><b>Old JOGL 1.x snippet</b></td><td nowrap valign="top"><b>New JOGL 2.x snippet</b></td></tr>
+</thead>
+<tbody nowrap>
+	<tr><td nowrap valign="top"><pre><code><b>import</b> com.sun.opengl.util.BufferUtil;
+
+  BufferUtil.newByteBuffer(<b><i>int</i></b>);</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> com.jogamp.common.nio.Buffers;
+
+  Buffers.newDirectByteBuffer(<b><i>int</i></b>);</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code><b>import</b> com.sun.opengl.util.BufferUtil;
+
+  BufferUtil.newDoubleBuffer(<b><i>int</i></b>);</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> com.jogamp.common.nio.Buffers;
+
+  Buffers.newDirectDoubleBuffer(<b><i>int</i></b>);</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code><b>import</b> com.sun.opengl.util.BufferUtil;
+
+  BufferUtil.newFloatBuffer(<b><i>int</i></b>);</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> com.jogamp.common.nio.Buffers;
+
+  Buffers.newDirectFloatBuffer(<b><i>int</i></b>);</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code><b>import</b> com.sun.opengl.util.BufferUtil;
+
+  BufferUtil.newIntBuffer(<b><i>int</i></b>);</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> com.jogamp.common.nio.Buffers;
+
+  Buffers.newDirectIntBuffer(<b><i>int</i></b>);</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code><b>import</b> com.sun.opengl.util.texture.TextureCoords;</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> com.jogamp.opengl.util.texture.TextureCoords;
+</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code><b>import</b> com.sun.opengl.util.texture.*;</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> com.jogamp.opengl.util.texture.Texture;
+<b>import</b> com.jogamp.opengl.util.texture.TextureCoords;
+<b>import</b> com.jogamp.opengl.util.texture.TextureData;
+<b>import</b> com.jogamp.opengl.util.texture.TextureIO;
+</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code><b>import</b> com.sun.opengl.util.j2d.TextRenderer;</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> com.jogamp.opengl.util.awt.TextRenderer;
+</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL</code></pre></td><td nowrap valign="top"><pre><code>GL2</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL gl = GLContext.getCurrent().getGL();</code></pre></td><td nowrap valign="top"><pre><code>GL2 gl = GLContext.getCurrent().getGL().getGL2();</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>gl.glBindFramebufferEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glBindFramebuffer(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glBindRenderbufferEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glBindRenderbuffer(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glCheckFramebufferStatusEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glCheckFramebufferStatus(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glDeleteFramebuffersEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glDeleteFramebuffers(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glFramebufferRenderbufferEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glFramebufferRenderbuffer(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glFramebufferTexture2DEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glFramebufferTexture2D(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glGenerateMipmapEXT(<b><i>int</i></b>)</code></pre></td><td nowrap valign="top"><pre><code>gl.glGenerateMipmap(<b><i>int</i></b>)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glGenFramebuffersEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glGenFramebuffers(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glGenRenderbuffersEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glGenRenderbuffers(...)</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>gl.glRenderbufferStorageEXT(...)</code></pre></td><td nowrap valign="top"><pre><code>gl.glRenderbufferStorage(...)</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_ALPHA_TEST</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_ALPHA_TEST</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_AMBIENT</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_AMBIENT</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_CLAMP_TO_BORDER</code></pre></td><td nowrap valign="top"><pre><code>GL2GL3.GL_CLAMP_TO_BORDER</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_CLIENT_VERTEX_ARRAY_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_CLIENT_VERTEX_ARRAY_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_COLOR_ATTACHMENT0_EXT</code></pre></td><td nowrap valign="top"><pre><code>GL.GL_COLOR_ATTACHMENT0</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_COLOR_BUFFER_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_COLOR_BUFFER_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_COLOR_MATERIAL</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_COLOR_MATERIAL</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_COMBINE</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_COMBINE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_COMBINE_RGB</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_COMBINE_RGB</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_COMPILE</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_COMPILE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_CURRENT_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_CURRENT_BIT</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_DECAL</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_DECAL</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_DEPTH_BUFFER_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_DEPTH_BUFFER_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_DIFFUSE</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_DIFFUSE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_DOUBLE</code></pre></td><td nowrap valign="top"><pre><code>GL2GL3.GL_DOUBLE</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_EMISSION</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_EMISSION</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_ENABLE_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_ENABLE_BIT</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_FILL</code></pre></td><td nowrap valign="top"><pre><code>GL2GL3.GL_FILL</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_FLAT</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_FLAT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_FRAMEBUFFER_EXT</code></pre></td><td nowrap valign="top"><pre><code>GL.GL_FRAMEBUFFER</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_FRAMEBUFFER_COMPLETE_EXT</code></pre></td><td nowrap valign="top"><pre><code>GL.GL_FRAMEBUFFER_COMPLETE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER</code></pre></td><td nowrap valign="top"><pre><code>GL2GL3.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT</code></pre></td><td nowrap valign="top"><b>*UNKNOWN*</b></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT</code></pre></td><td nowrap valign="top"><b>*UNKNOWN*</b></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_HINT_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_HINT_BIT</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_INT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_INT</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LIGHT0</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_LIGHT0</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LIGHT1</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_LIGHT0</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LIGHTING</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_LIGHTING</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LIGHTING_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_LIGHTING_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LIGHT_MODEL_AMBIENT</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_LIGHT_MODEL_AMBIENT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LIGHT_MODEL_LOCAL_VIEWER</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_LIGHT_MODEL_LOCAL_VIEWER</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LIGHT_MODEL_TWO_SIDE</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_LIGHT_MODEL_TWO_SIDE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LINE</code></pre></td><td nowrap valign="top"><pre><code>GL2GL3.GL_LINE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LINE_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_LINE_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_LINE_STIPPLE</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_LINE_STIPPLE</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_MAX_TEXTURE_UNITS</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_MAX_TEXTURE_UNITS</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_MODELVIEW</code></pre></td><td nowrap valign="top"><pre><code>GLMatrixFunc.GL_MODELVIEW</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_MODULATE</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_MODULATE</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_NORMAL_ARRAY</code></pre></td><td nowrap valign="top"><pre><code>GLPointerFunc.GL_NORMAL_ARRAY</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_NORMALIZE</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_NORMALIZE</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_OBJECT_LINEAR</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_OBJECT_LINEAR</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_OBJECT_PLANE</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_OBJECT_PLANE</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_PERSPECTIVE_CORRECTION_HINT</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_POINT_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_POINT_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_POINT_SMOOTH</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_POINT_SMOOTH</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_POINT_SMOOTH_HINT</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_POINT_SMOOTH_HINT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_POLYGON_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_POLYGON_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_POLYGON_SMOOTH_HINT</code></pre></td><td nowrap valign="top"><pre><code>GL2GL3.GL_POLYGON_SMOOTH_HINT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_POSITION</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_POSITION</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_PREVIOUS</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_PREVIOUS</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_PROJECTION</code></pre></td><td nowrap valign="top"><pre><code>GLMatrixFunc.GL_PROJECTION</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_PROJECTION_MATRIX</code></pre></td><td nowrap valign="top"><pre><code>GLMatrixFunc.GL_PROJECTION_MATRIX</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_QUADS</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_QUADS</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_RESCALE_NORMAL</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_RESCALE_NORMAL</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_S</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_S</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_SCISSOR_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_SCISSOR_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_SHININESS</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_SHININESS</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_SMOOTH</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_SMOOTH</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_SPECULAR</code></pre></td><td nowrap valign="top"><pre><code>GLLightingFunc.GL_SPECULAR</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_SRC0_RGB</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_SRC0_RGB</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_T</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_T</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_TEXTURE_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_TEXTURE_BIT</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_TEXTURE_COORD_ARRAY</code></pre></td><td nowrap valign="top"><pre><code>GLPointerFunc.GL_TEXTURE_COORD_ARRAY</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_TEXTURE_ENV</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_TEXTURE_ENV</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_TEXTURE_ENV_MODE</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_TEXTURE_ENV_MODE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_TEXTURE_GEN_MODE</code></pre></td><td nowrap valign="top"><pre><code>GL2ES1.GL_TEXTURE_GEN_MODE</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_TRANSFORM_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_TRANSFORM_BIT</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>GL.GL_VERTEX_ARRAY</code></pre></td><td nowrap valign="top"><pre><code>GLPointerFunc.GL_VERTEX_ARRAY</code></pre></td></tr>
+	<tr><td nowrap valign="top"><pre><code>GL.GL_VIEWPORT_BIT</code></pre></td><td nowrap valign="top"><pre><code>GL2.GL_VIEWPORT_BIT</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>
+
+
+  TextureIO.newTextureData(<b><i>InputStream</i></b>, <b><i>boolean</i></b>, <b><i>String</i></b>);</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> javax.media.opengl.GLProfile;
+
+
+  TextureIO.newTextureData(GLProfile.getDefault(), <b><i>InputStream</i></b>, <b><i>boolean</i></b>, <b><i>String</i></b>);</code></pre></td></tr>
+
+	<tr><td nowrap valign="top"><pre><code>
+
+
+  TextureIO.newTextureData(<b><i>BufferedImage</i></b>, <b><i>boolean)</i></b>;</code></pre></td><td nowrap valign="top"><pre><code><b>import</b> javax.media.opengl.GLProfile;
+<b>import</b> com.jogamp.opengl.util.texture.awt.AWTTextureIO;
+
+
+  AWTTextureIO.newTextureData(GLProfile.getDefault(), <b><i>BufferedImage</i></b>, <b><i>boolean</i></b>);</code></pre></td></tr>
+
+</tbody>
+</table>
+</body>
+</html>

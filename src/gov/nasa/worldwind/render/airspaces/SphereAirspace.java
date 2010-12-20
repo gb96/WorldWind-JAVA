@@ -5,13 +5,26 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render.airspaces;
 
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Cylinder;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sphere;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.GeometryBuilder;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.RestorableSupport;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.opengl.GL;
-import java.util.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * A spherical airspace shape defined by a center location and a radius. The sphere's center altitude and terrain
@@ -340,8 +353,8 @@ public class SphereAirspace extends AbstractAirspace
 
         this.setExpiryTime(-1L); // Sphere geometry never expires.
 
-        GL gl = dc.getGL();
-        gl.glPushAttrib(GL.GL_POLYGON_BIT | GL.GL_TRANSFORM_BIT);
+        GL2 gl = dc.getGL();
+        gl.glPushAttrib(GL2.GL_POLYGON_BIT | GL2.GL_TRANSFORM_BIT);
         try
         {
             gl.glEnable(GL.GL_CULL_FACE);
@@ -351,9 +364,9 @@ public class SphereAirspace extends AbstractAirspace
             // before lighting is computed. In this case we're scaling by a constant factor, so GL_RESCALE_NORMAL
             // is sufficient and potentially less expensive than GL_NORMALIZE (or computing unique normal vectors
             // for each value of radius). GL_RESCALE_NORMAL was introduced in OpenGL version 1.2.
-            gl.glEnable(GL.GL_RESCALE_NORMAL);
+            gl.glEnable(GL2ES1.GL_RESCALE_NORMAL);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPushMatrix();
             try
             {

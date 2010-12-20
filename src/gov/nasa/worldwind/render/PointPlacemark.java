@@ -7,24 +7,46 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import gov.nasa.worldwind.*;
+import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.Locatable;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WWObjectImpl;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLTextRenderer;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.WWUtil;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.media.opengl.GL;
-import javax.xml.stream.*;
-import java.awt.*;
-import java.io.*;
-import java.net.URL;
-import java.util.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
-import static gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil.kmlBoolean;
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * Represents a point placemark consisting of an image, an optional line linking the image to a corresponding point on
@@ -492,18 +514,18 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
      */
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         int attrMask =
             GL.GL_DEPTH_BUFFER_BIT // for depth test, depth mask and depth func
-                | GL.GL_TRANSFORM_BIT // for modelview and perspective
-                | GL.GL_VIEWPORT_BIT // for depth range
-                | GL.GL_CURRENT_BIT // for current color
+                | GL2.GL_TRANSFORM_BIT // for modelview and perspective
+                | GL2.GL_VIEWPORT_BIT // for depth range
+                | GL2.GL_CURRENT_BIT // for current color
                 | GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, and blend
-                | GL.GL_TEXTURE_BIT // for texture env
+                | GL2.GL_TEXTURE_BIT // for texture env
                 | GL.GL_DEPTH_BUFFER_BIT // for depth func
-                | GL.GL_ENABLE_BIT // for enable/disable changes
-                | GL.GL_HINT_BIT | GL.GL_LINE_BIT; // for antialiasing and line attrs
+                | GL2.GL_ENABLE_BIT // for enable/disable changes
+                | GL2.GL_HINT_BIT | GL2.GL_LINE_BIT; // for antialiasing and line attrs
 
         gl.glPushAttrib(attrMask);
 
@@ -608,7 +630,7 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
             return;
         }
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler osh = new OGLStackHandler();
         try
@@ -617,9 +639,9 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
             {
                 // Set up to replace the non-transparent texture colors with the single pick color.
                 gl.glEnable(GL.GL_TEXTURE_2D);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_SRC0_RGB, GL.GL_PREVIOUS);
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_REPLACE);
+                gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_COMBINE);
+                gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_SRC0_RGB, GL2ES1.GL_PREVIOUS);
+                gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_COMBINE_RGB, GL.GL_REPLACE);
 
                 Color pickColor = dc.getUniquePickColor();
                 this.pickSupport.addPickableObject(this.createPickedObject(dc, pickColor));
@@ -644,7 +666,7 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
             gl.glDepthMask(false);
 
             // Suppress any fully transparent image pixels.
-            gl.glEnable(GL.GL_ALPHA_TEST);
+            gl.glEnable(GL2ES1.GL_ALPHA_TEST);
             gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
 
             // Adjust depth of image to bring it slightly forward
@@ -757,9 +779,9 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
         x += offset.x;
         y += offset.y;
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glLoadIdentity();
 
         Double labelScale = this.getActiveAttributes().getLabelScale();
@@ -794,7 +816,7 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
      */
     protected void drawLine(DrawContext dc)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         gl.glDisable(GL.GL_TEXTURE_2D);
 
@@ -829,12 +851,12 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
      */
     protected void drawPoint(DrawContext dc)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         OGLStackHandler osh = new OGLStackHandler();
         try
         {
-            osh.pushAttrib(gl, GL.GL_POINT_BIT);
+            osh.pushAttrib(gl, GL2.GL_POINT_BIT);
 
             if (dc.isPickingMode())
             {
@@ -863,7 +885,7 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
             gl.glDepthMask(false);
 
             // Suppress any fully transparent pixels.
-            gl.glEnable(GL.GL_ALPHA_TEST);
+            gl.glEnable(GL2ES1.GL_ALPHA_TEST);
             gl.glAlphaFunc(GL.GL_GREATER, 0.001f);
 
             // Adjust depth of point to bring it slightly forward
@@ -915,7 +937,7 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
         Double lineWidth = this.getActiveAttributes().getLineWidth();
         if (lineWidth != null)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             if (dc.isPickingMode())
             {
@@ -939,7 +961,7 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
      */
     protected void setPointSize(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         Double scale = this.getActiveAttributes().getScale();
         if (scale == null)
@@ -952,8 +974,8 @@ public class PointPlacemark extends WWObjectImpl implements OrderedRenderable, L
 
         if (!dc.isPickingMode())
         {
-            gl.glEnable(GL.GL_POINT_SMOOTH);
-            gl.glHint(GL.GL_POINT_SMOOTH_HINT, GL.GL_NICEST);
+            gl.glEnable(GL2ES1.GL_POINT_SMOOTH);
+            gl.glHint(GL2ES1.GL_POINT_SMOOTH_HINT, GL.GL_NICEST);
         }
     }
 

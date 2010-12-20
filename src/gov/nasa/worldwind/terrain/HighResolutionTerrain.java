@@ -443,7 +443,7 @@ public class HighResolutionTerrain extends WWObjectImpl implements Terrain
 //            refCenters.add(tile.ri.referenceCenter);
 //        }
 //
-//        return BufferUtil.newIntBuffer(this.indices.length).put(this.indices);
+//        return Buffers.newDirectIntBuffer(this.indices.length).put(this.indices);
 //    }
 
     /** Computes the row and column dimensions of the tile array. */

@@ -6,15 +6,25 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.util;
 
-import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Plane;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.render.DrawContext;
 
-import java.awt.*;
-import java.nio.*;
-import java.util.*;
+import java.awt.Point;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * A collection of useful math methods, all static.
@@ -1000,7 +1010,7 @@ public class WWMath
         }
 
         int numIndices = (height - 1) * (2 * width) + (2 * (height - 2));
-        IntBuffer buffer = BufferUtil.newIntBuffer(numIndices);
+        IntBuffer buffer = Buffers.newDirectIntBuffer(numIndices);
 
         int pos;
         for (int y = 0; y < height - 1; y++)
@@ -1056,7 +1066,7 @@ public class WWMath
         }
 
         int numIndices = 2 * (width + height - 2);
-        IntBuffer buffer = BufferUtil.newIntBuffer(numIndices);
+        IntBuffer buffer = Buffers.newDirectIntBuffer(numIndices);
 
         for (int x = 0; x < width; x++)
         {
@@ -1123,7 +1133,7 @@ public class WWMath
         // If the normal buffer is null, create a new one with the capacity to store the same number of vertices as
         // the vertex buffer. Otherwise, initialize the normal buffer by setting all normal coordinate to zero.
         if (normals == null)
-            normals = BufferUtil.newFloatBuffer(3 * numVertices);
+            normals = Buffers.newDirectFloatBuffer(3 * numVertices);
         else
         {
             for (int i = 0; i < numVertices; i++)

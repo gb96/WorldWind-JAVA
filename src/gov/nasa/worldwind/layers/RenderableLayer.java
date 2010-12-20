@@ -396,7 +396,7 @@ public class RenderableLayer extends AbstractLayer
                 if (renderable != null)
                 {
 //                    float[] inColor = new float[4];
-//                    dc.getGL().glGetFloatv(GL.GL_CURRENT_COLOR, inColor, 0);
+//                    dc.getGL().glGetFloatv(GL2ES1.GL_CURRENT_COLOR, inColor, 0);
                     java.awt.Color color = dc.getUniquePickColor();
                     dc.getGL().glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
 

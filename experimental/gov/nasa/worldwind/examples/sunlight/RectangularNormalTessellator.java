@@ -6,22 +6,53 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.examples.sunlight;
 
-import com.sun.opengl.util.BufferUtil;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WWObjectImpl;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.cache.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.cache.BasicMemoryCache;
+import gov.nasa.worldwind.cache.MemoryCache;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Cylinder;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Plane;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Triangle;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.terrain.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.terrain.SectorGeometry;
+import gov.nasa.worldwind.terrain.SectorGeometryList;
+import gov.nasa.worldwind.terrain.Tessellator;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
-import java.awt.*;
-import java.nio.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * @author tag
@@ -494,7 +525,7 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
         int density = tile.density;
         int side = density + 3;
         int numVertices = side * side;
-        java.nio.DoubleBuffer verts = BufferUtil.newDoubleBuffer(numVertices * 3);
+        java.nio.DoubleBuffer verts = Buffers.newDirectDoubleBuffer(numVertices * 3);
         ArrayList<LatLon> latlons = this.computeLocations(tile);
         double[] elevations = new double[latlons.size()];
         dc.getGlobe().getElevations(tile.sector, latlons, tile.getResolution(), elevations);
@@ -677,30 +708,30 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
         if (!dc.isPickingMode() && this.lightDirection != null)
             beginLighting(dc);
 
-        GL gl = dc.getGL();
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glVertexPointer(3, GL.GL_DOUBLE, 0, tile.ri.vertices.rewind());
+        GL2 gl = dc.getGL();
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
+        gl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, tile.ri.vertices.rewind());
 
-        gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
-        gl.glNormalPointer(GL.GL_DOUBLE, 0, tile.ri.normals.rewind());
+        gl.glEnableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
+        gl.glNormalPointer(GL2GL3.GL_DOUBLE, 0, tile.ri.normals.rewind());
 
         for (int i = 0; i < numTextureUnits; i++)
         {
             gl.glClientActiveTexture(GL.GL_TEXTURE0 + i);
-            gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
             Object texCoords = dc.getValue(AVKey.TEXTURE_COORDINATES);
             if (texCoords != null && texCoords instanceof DoubleBuffer)
-                gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, ((DoubleBuffer) texCoords).rewind());
+                gl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, ((DoubleBuffer) texCoords).rewind());
             else
-                gl.glTexCoordPointer(2, GL.GL_DOUBLE, 0, tile.ri.texCoords.rewind());
+                gl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, tile.ri.texCoords.rewind());
         }
 
-        gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP,
-            tile.ri.indices.limit(), javax.media.opengl.GL.GL_UNSIGNED_INT,
+        gl.glDrawElements(GL.GL_TRIANGLE_STRIP,
+            tile.ri.indices.limit(), GL.GL_UNSIGNED_INT,
             tile.ri.indices.rewind());
 
-        gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+        gl.glDisableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
         gl.glPopClientAttrib();
 
         if (!dc.isPickingMode() && this.lightDirection != null)
@@ -713,11 +744,11 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
 
     private void beginLighting(DrawContext dc)
     {
-        GL gl = dc.getGL();
-        gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_LIGHTING_BIT);
+        GL2 gl = dc.getGL();
+        gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LIGHTING_BIT);
 
         this.material.apply(gl, GL.GL_FRONT);
-        gl.glDisable(GL.GL_COLOR_MATERIAL);
+        gl.glDisable(GLLightingFunc.GL_COLOR_MATERIAL);
 
         float[] lightPosition = {(float) -lightDirection.x, (float) -lightDirection.y, (float) -lightDirection.z, 0.0f};
         float[] lightDiffuse = new float[4];
@@ -725,22 +756,22 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
         lightColor.getRGBComponents(lightDiffuse);
         ambientColor.getRGBComponents(lightAmbient);
 
-        gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, lightPosition, 0);
-        gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, lightDiffuse, 0);
-        gl.glLightfv(GL.GL_LIGHT1, GL.GL_AMBIENT, lightAmbient, 0);
+        gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_POSITION, lightPosition, 0);
+        gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_DIFFUSE, lightDiffuse, 0);
+        gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_AMBIENT, lightAmbient, 0);
 
-        gl.glDisable(GL.GL_LIGHT0);
-        gl.glEnable(GL.GL_LIGHT1);
-        gl.glEnable(GL.GL_LIGHTING);
+        gl.glDisable(GLLightingFunc.GL_LIGHT0);
+        gl.glEnable(GLLightingFunc.GL_LIGHT1);
+        gl.glEnable(GLLightingFunc.GL_LIGHTING);
     }
 
     private void endLighting(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glDisable(GL.GL_LIGHT1);
-        gl.glEnable(GL.GL_LIGHT0);
-        gl.glDisable(GL.GL_LIGHTING);
+        gl.glDisable(GLLightingFunc.GL_LIGHT1);
+        gl.glEnable(GLLightingFunc.GL_LIGHT0);
+        gl.glDisable(GLLightingFunc.GL_LIGHTING);
 
         gl.glPopAttrib();
     }
@@ -767,27 +798,27 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
 
         dc.getView().pushReferenceCenter(dc, tile.ri.referenceCenter);
 
-        javax.media.opengl.GL gl = dc.getGL();
-        gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT | GL.GL_POLYGON_BIT
-            | GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT);
+        GL2 gl = dc.getGL();
+        gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT
+            | GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
         gl.glEnable(GL.GL_BLEND);
         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-        gl.glDisable(javax.media.opengl.GL.GL_DEPTH_TEST);
-        gl.glEnable(javax.media.opengl.GL.GL_CULL_FACE);
-        gl.glCullFace(javax.media.opengl.GL.GL_BACK);
-        gl.glDisable(javax.media.opengl.GL.GL_TEXTURE_2D);
+        gl.glDisable(GL.GL_DEPTH_TEST);
+        gl.glEnable(GL.GL_CULL_FACE);
+        gl.glCullFace(GL.GL_BACK);
+        gl.glDisable(GL.GL_TEXTURE_2D);
         gl.glColor4d(1d, 1d, 1d, 0.2);
-        gl.glPolygonMode(javax.media.opengl.GL.GL_FRONT,
-            javax.media.opengl.GL.GL_LINE);
+        gl.glPolygonMode(GL.GL_FRONT,
+            GL2GL3.GL_LINE);
 
         if (showTriangles)
         {
-            gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-            gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+            gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+            gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
 
-            gl.glVertexPointer(3, GL.GL_DOUBLE, 0, tile.ri.vertices);
-            gl.glDrawElements(javax.media.opengl.GL.GL_TRIANGLE_STRIP, indices
-                .limit(), javax.media.opengl.GL.GL_UNSIGNED_INT, indices);
+            gl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, tile.ri.vertices);
+            gl.glDrawElements(GL.GL_TRIANGLE_STRIP, indices
+                .limit(), GL.GL_UNSIGNED_INT, indices);
 
             gl.glPopClientAttrib();
         }
@@ -800,14 +831,14 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
         gl.glPopAttrib();
     }
 
-    private void renderPatchBoundary(DrawContext dc, RectTile tile, GL gl)
+    private void renderPatchBoundary(DrawContext dc, RectTile tile, GL2 gl)
     {
         // TODO: Currently only works if called from renderWireframe because no state is set here.
         // TODO: Draw the boundary using the vertices along the boundary rather than just at the corners.
         gl.glColor4d(1d, 0, 0, 1d);
         Vec4[] corners = tile.sector.computeCornerPoints(dc.getGlobe(), dc.getVerticalExaggeration());
 
-        gl.glBegin(javax.media.opengl.GL.GL_QUADS);
+        gl.glBegin(GL2.GL_QUADS);
         gl.glVertex3d(corners[0].x, corners[0].y, corners[0].z);
         gl.glVertex3d(corners[1].x, corners[1].y, corners[1].z);
         gl.glVertex3d(corners[2].x, corners[2].y, corners[2].z);
@@ -884,7 +915,7 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
         tile.ri.vertices.rewind();
         tile.ri.indices.rewind();
 
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (null != tile.ri.referenceCenter)
             dc.getView().pushReferenceCenter(dc, tile.ri.referenceCenter);
@@ -1491,7 +1522,7 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
             density = 1;
 
         int coordCount = (density + 3) * (density + 3);
-        DoubleBuffer p = BufferUtil.newDoubleBuffer(2 * coordCount);
+        DoubleBuffer p = Buffers.newDirectDoubleBuffer(2 * coordCount);
 
         double deltaLat = rt.sector.getDeltaLatRadians() / density;
         double deltaLon = rt.sector.getDeltaLonRadians() / density;
@@ -1576,7 +1607,7 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
             return p;
 
         int coordCount = (density + 3) * (density + 3);
-        p = BufferUtil.newDoubleBuffer(2 * coordCount);
+        p = Buffers.newDirectDoubleBuffer(2 * coordCount);
         double delta = 1d / density;
         int k = 2 * (density + 3);
         for (int j = 0; j < density; j++)
@@ -1655,7 +1686,7 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
         int sideSize = density + 2;
 
         int indexCount = 2 * sideSize * sideSize + 4 * sideSize - 2;
-        buffer = BufferUtil.newIntBuffer(indexCount);
+        buffer = Buffers.newDirectIntBuffer(indexCount);
         int k = 0;
         for (int i = 0; i < sideSize; i++)
         {
@@ -1701,8 +1732,8 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
     {
         int side = density + 3;
         int numVertices = side * side;
-        java.nio.DoubleBuffer normals = BufferUtil
-            .newDoubleBuffer(numVertices * 3);
+        java.nio.DoubleBuffer normals = Buffers
+            .newDirectDoubleBuffer(numVertices * 3);
         Vec4 p0, p1, p2, p3, p4;
 
         //don't calculate skirt normals yet
@@ -1786,8 +1817,8 @@ public class RectangularNormalTessellator extends WWObjectImpl implements Tessel
         double centerY = referenceCenter.y;
         double centerZ = referenceCenter.z;
         // Create normal buffer
-        java.nio.DoubleBuffer normals = BufferUtil
-            .newDoubleBuffer(numVertices * 3);
+        java.nio.DoubleBuffer normals = Buffers
+            .newDirectDoubleBuffer(numVertices * 3);
         int[] counts = new int[numVertices];
         Vec4[] norms = new Vec4[numVertices];
         for (int i = 0; i < numVertices; i++)

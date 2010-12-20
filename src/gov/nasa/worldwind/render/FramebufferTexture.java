@@ -7,12 +7,26 @@ All Rights Reserved.
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.*;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.geom.BilinearInterpolator;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
 
-import javax.media.opengl.*;
 import java.util.List;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLProfile;
+
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureCoords;
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * @author tag
@@ -136,7 +150,7 @@ public class FramebufferTexture implements WWTexture
 
     protected Texture initializeTexture(DrawContext dc)
     {
-        GL gl = GLContext.getCurrent().getGL();
+        GL2 gl = GLContext.getCurrent().getGL().getGL2();
 
         // TODO: limit texture dimensions to size of source texture
         this.width = Math.min(1024, dc.getDrawableWidth());
@@ -144,7 +158,7 @@ public class FramebufferTexture implements WWTexture
 
         this.generateTexture(dc, this.width, this.height);
 
-        TextureData td = new TextureData(GL.GL_RGBA, this.width, this.height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
+        TextureData td = new TextureData(GLProfile.getDefault(), GL.GL_RGBA, this.width, this.height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
             false, false, false, null, null);
         Texture t = TextureIO.newTexture(td);
         t.bind(); // must do this after generating texture because another texture is bound then
@@ -164,7 +178,7 @@ public class FramebufferTexture implements WWTexture
 
     protected void generateTexture(DrawContext dc, int width, int height)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler ogsh = new OGLStackHandler();
 
         Matrix geoToCartesian = this.computeGeographicToCartesianTransform(this.sector);
@@ -172,10 +186,10 @@ public class FramebufferTexture implements WWTexture
         try
         {
             ogsh.pushAttrib(gl, GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TEXTURE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT);
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TEXTURE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT);
 
             // Fill the framebuffer with transparent black.
             gl.glClearColor(0f, 0f, 0f, 0f);
@@ -202,7 +216,7 @@ public class FramebufferTexture implements WWTexture
                 this.sourceTexture.applyInternalTransform(dc);
                 
                 // Setup the texture to replace the fragment color at each pixel.
-                gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
+                gl.glTexEnvf(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
 
                 int tessellationDensity = this.getTessellationDensity();
                 this.drawQuad(dc, geoToCartesian, tessellationDensity, tessellationDensity);
@@ -246,7 +260,7 @@ public class FramebufferTexture implements WWTexture
         Vec4 ul = this.transformToQuadCoordinates(geoToCartesian, this.corners.get(3));
         BilinearInterpolator interp = new BilinearInterpolator(ll, lr, ur, ul);
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         gl.glBegin(GL.GL_TRIANGLE_STRIP);
         try
@@ -265,7 +279,7 @@ public class FramebufferTexture implements WWTexture
         double du = 1.0f / (float) slices;
         double dv = 1.0f / (float) stacks;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         for (int vi = 0; vi < stacks; vi++)
         {

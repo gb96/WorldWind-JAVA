@@ -4,19 +4,45 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.examples.analytics;
 
-import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.AbstractSurfaceObject;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.render.PreRenderable;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.BufferWrapper;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.SurfaceTileDrawContext;
+import gov.nasa.worldwind.util.WWMath;
+
+import java.awt.Color;
+import java.awt.Point;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.nio.*;
-import java.util.*;
-import java.util.List;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * AnalyticSurface represents a connected grid of geographic locations, covering a specified {@link Sector} at a
@@ -845,7 +871,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
     protected void bind(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.surfaceRenderInfo.cartesianVertexBuffer);
         gl.glNormalPointer(GL.GL_FLOAT, 0, this.surfaceRenderInfo.cartesianNormalBuffer);
         gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.surfaceRenderInfo.colorBuffer);
@@ -853,14 +879,14 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
     protected void drawInterior(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
             // Bind the shapes vertex colors as the diffuse material parameter.
-            gl.glEnable(GL.GL_COLOR_MATERIAL);
-            gl.glColorMaterial(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE);
-            gl.glEnableClientState(GL.GL_COLOR_ARRAY);
+            gl.glEnable(GLLightingFunc.GL_COLOR_MATERIAL);
+            gl.glColorMaterial(GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_DIFFUSE);
+            gl.glEnableClientState(GLPointerFunc.GL_COLOR_ARRAY);
             this.surfaceAttributes.getInteriorMaterial().apply(gl, GL.GL_FRONT_AND_BACK,
                 (float) this.surfaceAttributes.getInteriorOpacity());
         }
@@ -874,14 +900,14 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
     protected void drawOutline(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
             gl.glEnable(GL.GL_LINE_SMOOTH);
             // Unbind the shapes vertex colors as the diffuse material parameter.
-            gl.glDisable(GL.GL_LIGHTING);
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GLLightingFunc.GL_LIGHTING);
+            gl.glDisable(GLLightingFunc.GL_COLOR_MATERIAL);
             // Set the outline color.
             Color color = this.surfaceAttributes.getOutlineMaterial().getDiffuse();
             // Convert the floating point opacity from the range [0, 1] to the unsigned byte range [0, 255].
@@ -889,39 +915,39 @@ public class AnalyticSurface implements Renderable, PreRenderable
             gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue(), (byte) alpha);
         }
 
-        gl.glDisableClientState(GL.GL_COLOR_ARRAY);
+        gl.glDisableClientState(GLPointerFunc.GL_COLOR_ARRAY);
         gl.glLineWidth((float) this.surfaceAttributes.getOutlineWidth());
         this.surfaceRenderInfo.drawOutline(dc);
 
         if (!dc.isPickingMode())
         {
-            gl.glEnable(GL.GL_LIGHTING);
+            gl.glEnable(GLLightingFunc.GL_LIGHTING);
             gl.glDisable(GL.GL_LINE_SMOOTH);
-            gl.glDisable(GL.GL_LINE_STIPPLE);
+            gl.glDisable(GL2.GL_LINE_STIPPLE);
         }
     }
 
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         gl.glPushAttrib(
             GL.GL_COLOR_BUFFER_BIT // for alpha test func and ref, blend func
-                | GL.GL_CURRENT_BIT
+                | GL2.GL_CURRENT_BIT
                 | GL.GL_DEPTH_BUFFER_BIT
-                | GL.GL_LINE_BIT // for line width
-                | GL.GL_POLYGON_BIT // for cull face
-                | (!dc.isPickingMode() ? GL.GL_LIGHTING_BIT : 0) // for lighting.
-                | (!dc.isPickingMode() ? GL.GL_TRANSFORM_BIT : 0)); // for normalize state.
-        gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+                | GL2.GL_LINE_BIT // for line width
+                | GL2.GL_POLYGON_BIT // for cull face
+                | (!dc.isPickingMode() ? GL2.GL_LIGHTING_BIT : 0) // for lighting.
+                | (!dc.isPickingMode() ? GL2.GL_TRANSFORM_BIT : 0)); // for normalize state.
+        gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
         // Enable the alpha test.
-        gl.glEnable(GL.GL_ALPHA_TEST);
+        gl.glEnable(GL2ES1.GL_ALPHA_TEST);
         gl.glAlphaFunc(GL.GL_GREATER, 0.0f);
 
         gl.glEnable(GL.GL_CULL_FACE);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
 
         if (dc.isPickingMode())
         {
@@ -941,17 +967,17 @@ public class AnalyticSurface implements Renderable, PreRenderable
             OGLUtil.applyBlending(gl, false);
 
             // Enable lighting with GL_LIGHT1.
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
-            gl.glDisable(GL.GL_LIGHT0);
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glDisable(GLLightingFunc.GL_COLOR_MATERIAL);
+            gl.glDisable(GLLightingFunc.GL_LIGHT0);
+            gl.glEnable(GLLightingFunc.GL_LIGHTING);
+            gl.glEnable(GLLightingFunc.GL_LIGHT1);
+            gl.glEnable(GLLightingFunc.GL_NORMALIZE);
             // Configure the lighting model for two-sided smooth shading.
-            gl.glLightModeli(GL.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE);
-            gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
-            gl.glShadeModel(GL.GL_SMOOTH);
+            gl.glLightModeli(GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE);
+            gl.glLightModeli(GL2ES1.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE);
+            gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
             // Configure GL_LIGHT1 as a white light eminating from the viewer's eye point.
-            OGLUtil.applyLightingDirectionalFromViewer(gl, GL.GL_LIGHT1, new Vec4(1.0, 0.5, 1.0).normalize3());
+            OGLUtil.applyLightingDirectionalFromViewer(gl, GLLightingFunc.GL_LIGHT1, new Vec4(1.0, 0.5, 1.0).normalize3());
         }
 
         dc.getView().pushReferenceCenter(dc, this.referencePoint);
@@ -1186,11 +1212,11 @@ public class AnalyticSurface implements Renderable, PreRenderable
             this.gridHeight = gridHeight;
             this.interiorIndexBuffer = WWMath.computeIndicesForGridInterior(gridWidth, gridHeight);
             this.outlineIndexBuffer = WWMath.computeIndicesForGridOutline(gridWidth, gridHeight);
-            this.cartesianVertexBuffer = BufferUtil.newFloatBuffer(3 * numVertices);
-            this.cartesianNormalBuffer = BufferUtil.newFloatBuffer(3 * numVertices);
-            this.geographicVertexBuffer = BufferUtil.newFloatBuffer(3 * numVertices);
-            this.colorBuffer = BufferUtil.newByteBuffer(4 * numVertices);
-            this.shadowColorBuffer = BufferUtil.newByteBuffer(4 * numVertices);
+            this.cartesianVertexBuffer = Buffers.newDirectFloatBuffer(3 * numVertices);
+            this.cartesianNormalBuffer = Buffers.newDirectFloatBuffer(3 * numVertices);
+            this.geographicVertexBuffer = Buffers.newDirectFloatBuffer(3 * numVertices);
+            this.colorBuffer = Buffers.newDirectByteBuffer(4 * numVertices);
+            this.shadowColorBuffer = Buffers.newDirectByteBuffer(4 * numVertices);
         }
 
         public int getGridWidth()
@@ -1308,27 +1334,27 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         protected void beginDrawing(DrawContext dc)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             gl.glPushAttrib(
                 GL.GL_COLOR_BUFFER_BIT       // for alpha func and ref, blend func
-                    | GL.GL_CURRENT_BIT      // for current RGBA color
+                    | GL2.GL_CURRENT_BIT      // for current RGBA color
                     | GL.GL_DEPTH_BUFFER_BIT // for depth test disable
-                    | GL.GL_LINE_BIT);       // for line width);
-            gl.glPushClientAttrib(GL.GL_CLIENT_VERTEX_ARRAY_BIT);
+                    | GL2.GL_LINE_BIT);       // for line width);
+            gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPushMatrix();
 
             gl.glEnable(GL.GL_BLEND);
             OGLUtil.applyBlending(gl, false);
             gl.glDisable(GL.GL_DEPTH_TEST);
-            gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
         }
 
         protected void endDrawing(DrawContext dc)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             gl.glPopMatrix();
             gl.glPopClientAttrib();
             gl.glPopAttrib();
@@ -1354,11 +1380,11 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         protected void drawInterior(DrawContext dc)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             if (!dc.isPickingMode())
             {
-                gl.glEnableClientState(GL.GL_COLOR_ARRAY);
+                gl.glEnableClientState(GLPointerFunc.GL_COLOR_ARRAY);
             }
 
             this.analyticSurface.surfaceRenderInfo.drawInterior(dc);
@@ -1366,12 +1392,12 @@ public class AnalyticSurface implements Renderable, PreRenderable
 
         protected void drawOutline(DrawContext dc)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             if (!dc.isPickingMode())
             {
                 gl.glEnable(GL.GL_LINE_SMOOTH);
-                gl.glDisableClientState(GL.GL_COLOR_ARRAY);
+                gl.glDisableClientState(GLPointerFunc.GL_COLOR_ARRAY);
             }
 
             gl.glLineWidth((float) this.analyticSurface.surfaceAttributes.getOutlineWidth());
@@ -1389,7 +1415,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
         @Override
         protected void bind(DrawContext dc)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.analyticSurface.surfaceRenderInfo.geographicVertexBuffer);
             gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.analyticSurface.surfaceRenderInfo.colorBuffer);
         }
@@ -1427,7 +1453,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
         @Override
         protected void bind(DrawContext dc)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
             gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.analyticSurface.surfaceRenderInfo.geographicVertexBuffer);
             gl.glColorPointer(4, GL.GL_UNSIGNED_BYTE, 0, this.analyticSurface.surfaceRenderInfo.shadowColorBuffer);
         }

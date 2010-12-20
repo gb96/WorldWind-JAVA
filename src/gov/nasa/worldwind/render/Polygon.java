@@ -7,28 +7,62 @@
 
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.BufferUtil;
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.exception.WWRuntimeException;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Box;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Triangle;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
-import gov.nasa.worldwind.pick.*;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.terrain.Terrain;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.GLUTessellatorSupport;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.WWMath;
+
+import java.awt.Color;
+import java.awt.Point;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLPointerFunc;
 import javax.media.opengl.glu.GLU;
-import javax.xml.stream.*;
-import java.awt.*;
-import java.io.*;
-import java.net.URL;
-import java.nio.*;
-import java.util.*;
-import java.util.List;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * /** A 3D polygon. The polygon may be complex with multiple internal but not intersecting contours. Standard lighting
@@ -464,7 +498,7 @@ public class Polygon extends AVListImpl
         // Determine whether the tex-coord list needs to be closed.
         boolean closeIt = texCoords[0] != texCoords[texCoordCount - 2] || texCoords[1] != texCoords[texCoordCount - 1];
 
-        this.boundarySet.textureCoordsBuffer = BufferUtil.newFloatBuffer(2 * (texCoordCount + (closeIt ? 1 : 0)));
+        this.boundarySet.textureCoordsBuffer = Buffers.newDirectFloatBuffer(2 * (texCoordCount + (closeIt ? 1 : 0)));
         for (int i = 0; i < 2 * texCoordCount; i++)
         {
             this.boundarySet.textureCoordsBuffer.put(texCoords[i]);
@@ -1139,14 +1173,14 @@ public class Polygon extends AVListImpl
      */
     protected void beginDrawing(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.BEogsh.clear();
 
-        int attrMask = GL.GL_CURRENT_BIT | GL.GL_DEPTH_BUFFER_BIT
-            | GL.GL_LINE_BIT | GL.GL_HINT_BIT // for outline
-            | GL.GL_POLYGON_BIT // for interior
+        int attrMask = GL2.GL_CURRENT_BIT | GL.GL_DEPTH_BUFFER_BIT
+            | GL2.GL_LINE_BIT | GL2.GL_HINT_BIT // for outline
+            | GL2.GL_POLYGON_BIT // for interior
             | GL.GL_COLOR_BUFFER_BIT
-            | GL.GL_TEXTURE_BIT | GL.GL_TRANSFORM_BIT; // for texture
+            | GL2.GL_TEXTURE_BIT | GL2.GL_TRANSFORM_BIT; // for texture
 
         this.BEogsh.pushAttrib(gl, attrMask);
 
@@ -1166,8 +1200,8 @@ public class Polygon extends AVListImpl
 
         gl.glDisable(GL.GL_CULL_FACE);
 
-        this.BEogsh.pushClientAttrib(gl, GL.GL_CLIENT_VERTEX_ARRAY_BIT);
-        gl.glEnableClientState(GL.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
+        this.BEogsh.pushClientAttrib(gl, GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
+        gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY); // all drawing uses vertex arrays
 
         dc.getView().pushReferenceCenter(dc, this.boundarySet.referencePoint);
     }
@@ -1242,19 +1276,19 @@ public class Polygon extends AVListImpl
      */
     protected void doDrawOrderedRenderable(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         dc.getView().setReferenceCenter(dc, this.boundarySet.referencePoint);
 
         if (this.mustApplyLighting(dc))
         {
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glEnable(GLLightingFunc.GL_LIGHTING);
+            gl.glEnableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
         }
         else
         {
-            gl.glDisable(GL.GL_LIGHTING);
-            gl.glDisableClientState(GL.GL_NORMAL_ARRAY);
+            gl.glDisable(GLLightingFunc.GL_LIGHTING);
+            gl.glDisableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
         }
 
         if (dc.isPickingMode())
@@ -1284,7 +1318,7 @@ public class Polygon extends AVListImpl
         if (!activeAttrs.isDrawOutline())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
@@ -1314,7 +1348,7 @@ public class Polygon extends AVListImpl
 
         if (activeAttrs.getOutlineStippleFactor() > 0)
         {
-            gl.glEnable(GL.GL_LINE_STIPPLE);
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
             gl.glLineStipple(activeAttrs.getOutlineStippleFactor(), activeAttrs.getOutlineStipplePattern());
         }
 
@@ -1348,7 +1382,7 @@ public class Polygon extends AVListImpl
         if (!activeAttrs.isDrawInterior())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
@@ -1378,12 +1412,12 @@ public class Polygon extends AVListImpl
 
             gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, this.boundarySet.textureCoordsBuffer.rewind());
             dc.getGL().glEnable(GL.GL_TEXTURE_2D);
-            gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
         }
         else
         {
             dc.getGL().glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glDisableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
         }
 
         gl.glVertexPointer(3, GL.GL_FLOAT, 0, this.boundarySet.vertexBuffer.rewind());
@@ -1404,7 +1438,7 @@ public class Polygon extends AVListImpl
         if (!activeAttrs.isDrawInterior())
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         if (!dc.isPickingMode())
         {
@@ -1434,12 +1468,12 @@ public class Polygon extends AVListImpl
 
             gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, this.boundarySet.textureCoordsBuffer.rewind());
             dc.getGL().glEnable(GL.GL_TEXTURE_2D);
-            gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
         }
         else
         {
             dc.getGL().glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisableClientState(GL.GL_TEXTURE_COORD_ARRAY);
+            gl.glDisableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
         }
 
         boolean fillBuffers = false;
@@ -1647,7 +1681,7 @@ public class Polygon extends AVListImpl
         if (boundarySet.vertexBuffer != null && boundarySet.vertexBuffer.capacity() >= this.totalNumLocations * 3)
             boundarySet.vertexBuffer.clear();
         else
-            boundarySet.vertexBuffer = BufferUtil.newFloatBuffer(this.totalNumLocations * 3);
+            boundarySet.vertexBuffer = Buffers.newDirectFloatBuffer(this.totalNumLocations * 3);
 
         // Fill the vertex buffer. Simultaneously create individual buffer slices for each boundary. These are used to
         // draw the outline.
@@ -1667,7 +1701,7 @@ public class Polygon extends AVListImpl
             && boundarySet.normalBuffer.capacity() >= this.totalNumLocations * 3)
             boundarySet.normalBuffer.clear();
         else
-            boundarySet.normalBuffer = BufferUtil.newFloatBuffer(boundarySet.vertexBuffer.capacity());
+            boundarySet.normalBuffer = Buffers.newDirectFloatBuffer(boundarySet.vertexBuffer.capacity());
 
         for (BoundaryInfo boundary : boundarySet)
         {
@@ -1759,7 +1793,7 @@ public class Polygon extends AVListImpl
             return ib;
 
         // The edges are two-point lines connecting vertex pairs.
-        ib = BufferUtil.newIntBuffer(2 * (n - 1) * 3);
+        ib = Buffers.newDirectIntBuffer(2 * (n - 1) * 3);
         for (int i = 0; i < n - 1; i++)
         {
             ib.put(i).put(i + 1);
@@ -1870,7 +1904,7 @@ public class Polygon extends AVListImpl
     protected void makeIndexLists(GLUTessellatorSupport.CollectIndexListsCallback cb)
     {
         if (this.fillIndices == null || this.fillIndices.capacity() < cb.getNumIndices())
-            this.fillIndices = BufferUtil.newIntBuffer(cb.getNumIndices());
+            this.fillIndices = Buffers.newDirectIntBuffer(cb.getNumIndices());
         else
             this.fillIndices.clear();
 

@@ -10,12 +10,24 @@ package gov.nasa.worldwind.util.tree;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.HotSpot;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwind.util.WWMath;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 
 import javax.media.opengl.GL;
-import java.awt.*;
-import java.awt.event.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 
 /**
  * A scrollbar component. The scrollable range is defined by four values: min, max, value, and extent. {@code value} is
@@ -224,20 +236,20 @@ public class ScrollBar implements Renderable
 
     protected void draw(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         OGLStackHandler oglStack = new OGLStackHandler();
         try
         {
             oglStack.pushAttrib(gl,
                 GL.GL_COLOR_BUFFER_BIT
-                    | GL.GL_CURRENT_BIT
-                    | GL.GL_LINE_BIT
-                    | GL.GL_POLYGON_BIT);
+                    | GL2.GL_CURRENT_BIT
+                    | GL2.GL_LINE_BIT
+                    | GL2.GL_POLYGON_BIT);
 
             gl.glLineWidth(1f);
             OGLUtil.applyColor(gl, this.getLineColor(), this.getOpacity(), false);
 
-            gl.glPolygonMode(GL.GL_FRONT, GL.GL_LINE);
+            gl.glPolygonMode(GL.GL_FRONT, GL2GL3.GL_LINE);
 
             // Draw scroll bar frame
             TreeUtil.drawRect(gl, this.bounds);
@@ -246,7 +258,7 @@ public class ScrollBar implements Renderable
             TreeUtil.drawRect(gl, this.scrollDownControlBounds);
             TreeUtil.drawRect(gl, this.scrollUpControlBounds);
 
-            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
+            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2GL3.GL_FILL);
 
             // Draw background gradient
             String gradientDirection;
@@ -259,10 +271,10 @@ public class ScrollBar implements Renderable
 
             // Draw a border around the knob
             OGLUtil.applyColor(gl, this.getLineColor(), this.getOpacity(), false);
-            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE);
+            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2GL3.GL_LINE);
             TreeUtil.drawRect(gl, this.scrollKnobBounds);
 
-            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
+            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2GL3.GL_FILL);
             if (AVKey.VERTICAL.equals(this.getOrientation()))
             {
                 this.drawTriangle(dc, 90, this.scrollUpControlBounds, arrowInsets);
@@ -673,7 +685,7 @@ public class ScrollBar implements Renderable
 
     protected void drawTriangle(DrawContext dc, float rotation, Rectangle bounds, Insets insets)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         try
         {

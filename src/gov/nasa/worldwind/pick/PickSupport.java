@@ -6,14 +6,20 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.pick;
 
-import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logging;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.media.opengl.GL;
-import java.util.*;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GL2ES1;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * @author tag
@@ -82,12 +88,12 @@ public class PickSupport
 
     public int getTopColor(DrawContext dc, java.awt.Point pickPoint)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        java.nio.ByteBuffer pixel = BufferUtil.newByteBuffer(3);
+        java.nio.ByteBuffer pixel = Buffers.newDirectByteBuffer(3);
         int yInGLCoords = dc.getView().getViewport().height - pickPoint.y - 1;
         gl.glReadPixels(pickPoint.x, yInGLCoords, 1, 1,
-            javax.media.opengl.GL.GL_RGB, GL.GL_UNSIGNED_BYTE, pixel);
+            GL.GL_RGB, GL.GL_UNSIGNED_BYTE, pixel);
 
         java.awt.Color topColor = null;
         try
@@ -104,13 +110,13 @@ public class PickSupport
 
     public void beginPicking(DrawContext dc)
     {
-        javax.media.opengl.GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT);
+        gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
 
         gl.glDisable(GL.GL_DITHER);
-        gl.glDisable(GL.GL_LIGHTING);
-        gl.glDisable(GL.GL_FOG);
+        gl.glDisable(GLLightingFunc.GL_LIGHTING);
+        gl.glDisable(GL2ES1.GL_FOG);
         gl.glDisable(GL.GL_BLEND);
         gl.glDisable(GL.GL_TEXTURE_2D);
 

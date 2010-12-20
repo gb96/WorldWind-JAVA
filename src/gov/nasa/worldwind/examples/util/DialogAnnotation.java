@@ -5,11 +5,18 @@ All Rights Reserved.
 package gov.nasa.worldwind.examples.util;
 
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.render.Annotation;
+import gov.nasa.worldwind.render.AnnotationAttributes;
+import gov.nasa.worldwind.render.AnnotationNullLayout;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.FrameFactory;
+import gov.nasa.worldwind.render.GlobeAnnotation;
+import gov.nasa.worldwind.render.WWTexture;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * @author dcollins
@@ -220,7 +227,7 @@ public abstract class DialogAnnotation extends GlobeAnnotation implements java.a
         protected void transformBackgroundImageCoordsToAnnotationCoords(DrawContext dc, int width, int height,
             WWTexture texture)
         {
-            GL gl = dc.getGL();
+            GL2 gl = dc.getGL();
 
             // Rotate around an axis originating from the center of the image and coming out of the screen.
             double hw = (double) texture.getWidth(dc) / 2d;

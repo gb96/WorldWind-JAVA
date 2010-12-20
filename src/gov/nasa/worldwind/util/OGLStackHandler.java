@@ -7,6 +7,8 @@ All Rights Reserved.
 package gov.nasa.worldwind.util;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * @author tag
@@ -35,40 +37,40 @@ public class OGLStackHandler
             || this.texturePushed;
     }
 
-    public void pushAttrib(GL gl, int mask)
+    public void pushAttrib(GL2 gl, int mask)
     {
         gl.glPushAttrib(mask);
         this.attribsPushed = true;
     }
 
-    public void pushClientAttrib(GL gl, int mask)
+    public void pushClientAttrib(GL2 gl, int mask)
     {
         gl.glPushClientAttrib(mask);
         this.clientAttribsPushed = true;
     }
 
-    public void pushModelview(GL gl)
+    public void pushModelview(GL2 gl)
     {
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
         this.modelviewPushed = true;
     }
 
-    public void pushProjection(GL gl)
+    public void pushProjection(GL2 gl)
     {
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPushMatrix();
         this.projectionPushed = true;
     }
 
-    public void pushTexture(GL gl)
+    public void pushTexture(GL2 gl)
     {
         gl.glMatrixMode(GL.GL_TEXTURE);
         gl.glPushMatrix();
         this.texturePushed = true;
     }
 
-    public void pop(GL gl)
+    public void pop(GL2 gl)
     {
         if (this.attribsPushed)
         {
@@ -84,14 +86,14 @@ public class OGLStackHandler
 
         if (this.modelviewPushed)
         {
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPopMatrix();
             this.modelviewPushed = false;
         }
 
         if (this.projectionPushed)
         {
-            gl.glMatrixMode(GL.GL_PROJECTION);
+            gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
             gl.glPopMatrix();
             this.projectionPushed = false;
         }
@@ -104,23 +106,23 @@ public class OGLStackHandler
         }
     }
 
-    public void pushModelviewIdentity(GL gl)
+    public void pushModelviewIdentity(GL2 gl)
     {
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         this.modelviewPushed = true;
         gl.glPushMatrix();
         gl.glLoadIdentity();
     }
 
-    public void pushProjectionIdentity(GL gl)
+    public void pushProjectionIdentity(GL2 gl)
     {
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         this.projectionPushed = true;
         gl.glPushMatrix();
         gl.glLoadIdentity();
     }
 
-    public void pushTextureIdentity(GL gl)
+    public void pushTextureIdentity(GL2 gl)
     {
         gl.glMatrixMode(GL.GL_TEXTURE);
         this.texturePushed = true;

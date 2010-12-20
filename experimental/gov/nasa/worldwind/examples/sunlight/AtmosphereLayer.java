@@ -1,13 +1,20 @@
 package gov.nasa.worldwind.examples.sunlight;
 
 import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.AbstractLayer;
-import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.*;
-import java.awt.*;
+import java.awt.Color;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 /**
  * Renders an atmosphere around the globe and a sky dome at low altitude.
@@ -80,7 +87,7 @@ public class AtmosphereLayer extends AbstractLayer
     @Override
     public void doRender(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
         boolean projectionPushed = false;
@@ -121,12 +128,12 @@ public class AtmosphereLayer extends AbstractLayer
              }
 
             // GL set up
-            gl.glPushAttrib(GL.GL_POLYGON_BIT); // Temporary hack around aliased sky.
+            gl.glPushAttrib(GL2.GL_POLYGON_BIT); // Temporary hack around aliased sky.
             gl.glPopAttrib();
 
-            gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_TRANSFORM_BIT
-                    | GL.GL_POLYGON_BIT | GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT
-                    | GL.GL_CURRENT_BIT);
+            gl.glPushAttrib(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL2.GL_TRANSFORM_BIT
+                    | GL2.GL_POLYGON_BIT | GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT
+                    | GL2.GL_CURRENT_BIT);
             attribsPushed = true;
             gl.glDisable(GL.GL_TEXTURE_2D);        // no textures
             gl.glDisable(GL.GL_DEPTH_TEST);
@@ -137,12 +144,12 @@ public class AtmosphereLayer extends AbstractLayer
                             10e3, 2 * distToCenterOfPlanet + 10e3);
             double[] matrixArray = new double[16];
             projection.toArray(matrixArray, 0, false);
-            gl.glMatrixMode(GL.GL_PROJECTION);
+            gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadMatrixd(matrixArray, 0);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             // Sky transform
@@ -159,12 +166,12 @@ public class AtmosphereLayer extends AbstractLayer
             // Restore GL state
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (attribsPushed)
@@ -188,9 +195,9 @@ public class AtmosphereLayer extends AbstractLayer
         if (this.sunDirection == null)
             return;
         
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         this.glListId = gl.glGenLists(1);
-        gl.glNewList(this.glListId, GL.GL_COMPILE);
+        gl.glNewList(this.glListId, GL2.GL_COMPILE);
         this.drawSkyGradient(dc, radius, startLat, endLat, slices, stacks);
         gl.glEndList();
     }
@@ -216,7 +223,7 @@ public class AtmosphereLayer extends AbstractLayer
         Matrix skyTransform = computeSkyTransform(dc);
 
         // GL setup
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
         gl.glEnable(GL.GL_BLEND);
         gl.glDisable(GL.GL_TEXTURE_2D);
@@ -230,7 +237,7 @@ public class AtmosphereLayer extends AbstractLayer
 
         // bottom fade
         latitude = startLat - Math.max((endLat - startLat) / 4, 2);
-        gl.glBegin(GL.GL_QUAD_STRIP);
+        gl.glBegin(GL2.GL_QUAD_STRIP);
         for (int slice = 0; slice <= slices; slice++)
         {
             longitude = 180 - ((float) slice / slices * (float) 360);
@@ -257,7 +264,7 @@ public class AtmosphereLayer extends AbstractLayer
             kTop = 1 - Math.cos(linearTop * Math.PI / 2);
             latitudeTop = startLat + Math.pow(kTop, 3) * (endLat - startLat);
             // Draw stack
-            gl.glBegin(GL.GL_QUAD_STRIP);
+            gl.glBegin(GL2.GL_QUAD_STRIP);
             for (int slice = 0; slice <= slices; slice++)
             {
                 longitude = 180 - ((float) slice / slices * (float) 360);
@@ -277,7 +284,7 @@ public class AtmosphereLayer extends AbstractLayer
         // Top fade
         if (endLat < 90)
         {
-            gl.glBegin(GL.GL_QUAD_STRIP);
+            gl.glBegin(GL2.GL_QUAD_STRIP);
             for (int slice = 0; slice <= slices; slice++) {
                 longitude = 180 - ((float) slice / slices * (float) 360);
                 Vec4 v = SphericalToCartesian(latitudeTop, longitude, radius);
@@ -333,7 +340,7 @@ public class AtmosphereLayer extends AbstractLayer
         if (glc == null)
             return;
 
-        glc.getGL().glDeleteLists(this.glListId, 1);
+        glc.getGL().getGL2().glDeleteLists(this.glListId, 1);
         this.glListId = -1;
     }
 

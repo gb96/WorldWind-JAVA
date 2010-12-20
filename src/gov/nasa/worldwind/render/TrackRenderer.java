@@ -6,19 +6,27 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.tracks.*;
-import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwind.terrain.*;
-import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.Disposable;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.geom.PolarPoint;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.pick.PickSupport;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.terrain.SectorGeometryList;
+import gov.nasa.worldwind.tracks.TrackPoint;
+import gov.nasa.worldwind.util.Logging;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.GLUquadric;
+import java.util.Iterator;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
 import javax.media.opengl.glu.GLU;
-import java.util.*;
+import javax.media.opengl.glu.GLUquadric;
 
 /**
  * @author tag
@@ -282,21 +290,21 @@ public class TrackRenderer implements Disposable
 
     protected void begin(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         Vec4 cameraPosition = dc.getView().getEyePoint();
 
         if (dc.isPickingMode())
         {
             this.pickSupport.beginPicking(dc);
 
-            gl.glPushAttrib(GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_TRANSFORM_BIT);
+            gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_TRANSFORM_BIT);
             gl.glDisable(GL.GL_TEXTURE_2D);
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GLLightingFunc.GL_COLOR_MATERIAL);
         }
         else
         {
             gl.glPushAttrib(
-                GL.GL_TEXTURE_BIT | GL.GL_ENABLE_BIT | GL.GL_CURRENT_BIT | GL.GL_LIGHTING_BIT | GL.GL_TRANSFORM_BIT);
+                GL2.GL_TEXTURE_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LIGHTING_BIT | GL2.GL_TRANSFORM_BIT);
             gl.glDisable(GL.GL_TEXTURE_2D);
 
             float[] lightPosition =
@@ -305,28 +313,28 @@ public class TrackRenderer implements Disposable
             float[] lightAmbient = {1.0f, 1.0f, 1.0f, 1.0f};
             float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
 
-            gl.glDisable(GL.GL_COLOR_MATERIAL);
+            gl.glDisable(GLLightingFunc.GL_COLOR_MATERIAL);
 
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, lightPosition, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, lightDiffuse, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_AMBIENT, lightAmbient, 0);
-            gl.glLightfv(GL.GL_LIGHT1, GL.GL_SPECULAR, lightSpecular, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_POSITION, lightPosition, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_DIFFUSE, lightDiffuse, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_AMBIENT, lightAmbient, 0);
+            gl.glLightfv(GLLightingFunc.GL_LIGHT1, GLLightingFunc.GL_SPECULAR, lightSpecular, 0);
 
-            gl.glDisable(GL.GL_LIGHT0);
-            gl.glEnable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHTING);
-            gl.glEnable(GL.GL_NORMALIZE);
+            gl.glDisable(GLLightingFunc.GL_LIGHT0);
+            gl.glEnable(GLLightingFunc.GL_LIGHT1);
+            gl.glEnable(GLLightingFunc.GL_LIGHTING);
+            gl.glEnable(GLLightingFunc.GL_NORMALIZE);
         }
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
     }
 
     protected void end(DrawContext dc)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
-        gl.glMatrixMode(GL.GL_MODELVIEW);
+        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPopMatrix();
 
         if (dc.isPickingMode())
@@ -335,10 +343,10 @@ public class TrackRenderer implements Disposable
         }
         else
         {
-            gl.glDisable(GL.GL_LIGHT1);
-            gl.glEnable(GL.GL_LIGHT0);
-            gl.glDisable(GL.GL_LIGHTING);
-            gl.glDisable(GL.GL_NORMALIZE);
+            gl.glDisable(GLLightingFunc.GL_LIGHT1);
+            gl.glEnable(GLLightingFunc.GL_LIGHT0);
+            gl.glDisable(GLLightingFunc.GL_LIGHTING);
+            gl.glDisable(GLLightingFunc.GL_NORMALIZE);
         }
 
         gl.glPopAttrib();
@@ -390,7 +398,7 @@ public class TrackRenderer implements Disposable
                 if (glc == null)
                     return;
 
-                glc.getGL().glDeleteLists(this.glListId, 1);
+                glc.getGL().getGL2().glDeleteLists(this.glListId, 1);
 
                 this.glListId = -1;
             }
@@ -415,7 +423,7 @@ public class TrackRenderer implements Disposable
             int slices = 36;
             int stacks = 18;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
             dc.getGLU().gluSphere(this.quadric, radius, slices, stacks);
             dc.getGL().glEndList();
 
@@ -440,7 +448,7 @@ public class TrackRenderer implements Disposable
             int stacks = 30;
             int loops = 2;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
             dc.getGLU().gluQuadricOrientation(quadric, GLU.GLU_OUTSIDE);
             dc.getGLU().gluCylinder(quadric, 1d, 0d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
             dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
@@ -472,7 +480,7 @@ public class TrackRenderer implements Disposable
             int stacks = 1;
             int loops = 1;
 
-            dc.getGL().glNewList(this.glListId, GL.GL_COMPILE);
+            dc.getGL().glNewList(this.glListId, GL2.GL_COMPILE);
             dc.getGLU().gluCylinder(quadric, 1d, 1d, 2d, slices, (int) (2 * (Math.sqrt(stacks)) + 1));
             dc.getGLU().gluDisk(quadric, 0d, 1d, slices, loops);
             dc.getGL().glTranslated(0, 0, 2);

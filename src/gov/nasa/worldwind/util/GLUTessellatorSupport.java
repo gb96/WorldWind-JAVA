@@ -7,9 +7,13 @@ package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.geom.Vec4;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.*;
 import java.util.ArrayList;
+
+import javax.media.opengl.GL2;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUtessellator;
+import javax.media.opengl.glu.GLUtessellatorCallback;
+import javax.media.opengl.glu.GLUtessellatorCallbackAdapter;
 
 /**
  * GLUTessellatorSupport is a utility class for configuring and using a {@link javax.media.opengl.glu.GLUtessellator} to
@@ -127,7 +131,7 @@ public class GLUTessellatorSupport
      *
      * @throws IllegalArgumentException if the GL is null.
      */
-    public static GLUtessellatorCallback createOGLDrawPrimitivesCallback(GL gl)
+    public static GLUtessellatorCallback createOGLDrawPrimitivesCallback(GL2 gl)
     {
         if (gl == null)
         {
@@ -141,9 +145,9 @@ public class GLUTessellatorSupport
 
     protected static class OGLDrawPrimitivesCallback extends GLUtessellatorCallbackAdapter
     {
-        protected final GL gl;
+        protected final GL2 gl;
 
-        public OGLDrawPrimitivesCallback(GL gl)
+        public OGLDrawPrimitivesCallback(GL2 gl)
         {
             if (gl == null)
             {

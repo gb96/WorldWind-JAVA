@@ -6,9 +6,10 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.j2d.TextRenderer;
 import gov.nasa.worldwind.Disposable;
 import gov.nasa.worldwind.util.Logging;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * http://java.sun.com/products/java-media/2D/reference/faqs/index.html#Q_What_are_fractional_metrics_Wh

@@ -6,23 +6,57 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import com.sun.opengl.util.texture.TextureCoords;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.Model;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WWObjectImpl;
 import gov.nasa.worldwind.cache.TextureCache;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Extent;
+import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.PickPointFrustum;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.pick.*;
-import gov.nasa.worldwind.terrain.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.pick.PickedObjectList;
+import gov.nasa.worldwind.terrain.SectorGeometryList;
+import gov.nasa.worldwind.terrain.Terrain;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.PerformanceStatistic;
+import gov.nasa.worldwind.util.PickPointFrustumList;
+import gov.nasa.worldwind.util.SectorVisibilityTree;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.GLU;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.nio.FloatBuffer;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Set;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLDrawable;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+import javax.media.opengl.glu.GLU;
+
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 /**
  * @author Tom Gaskins
@@ -101,9 +135,9 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         this.geographicSurfaceTileRenderer.dispose();
     }
 
-    public final GL getGL()
+    public final GL2 getGL()
     {
-        return this.getGLContext().getGL();
+        return this.getGLContext().getGL().getGL2();
     }
 
     public final GLU getGLU()
@@ -490,9 +524,9 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
 
     public void drawUnitQuad()
     {
-        GL gl = this.getGL();
+        GL2 gl = this.getGL();
 
-        gl.glBegin(GL.GL_QUADS);
+        gl.glBegin(GL2.GL_QUADS);
         gl.glVertex2d(0d, 0d);
         gl.glVertex2d(1, 0d);
         gl.glVertex2d(1, 1);
@@ -502,9 +536,9 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
 
     public void drawUnitQuad(TextureCoords texCoords)
     {
-        GL gl = this.getGL();
+        GL2 gl = this.getGL();
 
-        gl.glBegin(GL.GL_QUADS);
+        gl.glBegin(GL2.GL_QUADS);
         gl.glTexCoord2d(texCoords.left(), texCoords.bottom());
         gl.glVertex2d(0d, 0d);
         gl.glTexCoord2d(texCoords.right(), texCoords.bottom());
@@ -518,7 +552,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
 
     public void drawUnitQuadOutline()
     {
-        GL gl = this.getGL();
+        GL2 gl = this.getGL();
 
         gl.glBegin(GL.GL_LINE_LOOP);
         gl.glVertex2d(0d, 0d);
@@ -533,7 +567,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         if (vBuf == null || nBuf == null)
             return;
 
-        GL gl = this.getGL();
+        GL2 gl = this.getGL();
 
         vBuf.rewind();
         nBuf.rewind();
@@ -836,23 +870,23 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     {
         // Modify the projection transform to shift the depth values slightly toward the camera in order to
         // ensure the lines are selected during depth buffering.
-        GL gl = this.getGL();
+        GL2 gl = this.getGL();
 
         float[] pm = new float[16];
-        gl.glGetFloatv(GL.GL_PROJECTION_MATRIX, pm, 0);
+        gl.glGetFloatv(GLMatrixFunc.GL_PROJECTION_MATRIX, pm, 0);
         pm[10] *= offset != null ? offset : 0.99; // TODO: See Lengyel 2 ed. Section 9.1.2 to compute optimal offset
 
-        gl.glPushAttrib(GL.GL_TRANSFORM_BIT);
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glPushAttrib(GL2.GL_TRANSFORM_BIT);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPushMatrix();
         gl.glLoadMatrixf(pm, 0);
     }
 
     public void popProjectionOffest()
     {
-        GL gl = this.getGL();
+        GL2 gl = this.getGL();
 
-        gl.glMatrixMode(GL.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glPopMatrix();
         gl.glPopAttrib();
     }
@@ -873,7 +907,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         //
         // These issues are resolved by making several passes for the interior and outline, as follows:
 
-        GL gl = this.getGL();
+        GL2 gl = this.getGL();
 
         if (this.isDeepPickingEnabled())
         {
@@ -887,7 +921,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         }
 
         OGLStackHandler ogsh = new OGLStackHandler();
-        int attribMask = GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_POLYGON_BIT;
+        int attribMask = GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT;
         ogsh.pushAttrib(gl, attribMask);
 
         try
@@ -920,7 +954,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
                     // Draw depth.
                     gl.glColorMask(false, false, false, false);
                     gl.glDepthMask(true);
-                    gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
+                    gl.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
                     Double depthOffsetFactor = renderer.getDepthOffsetFactor(this, shape);
                     Double depthOffsetUnits = renderer.getDepthOffsetUnits(this, shape);
                     gl.glPolygonOffset(
@@ -932,7 +966,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
                     // Draw color.
                     gl.glColorMask(true, true, true, true);
                     gl.glDepthMask(false);
-                    gl.glDisable(GL.GL_POLYGON_OFFSET_FILL);
+                    gl.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
 
                     renderer.drawInterior(this, shape);
                 }
@@ -966,7 +1000,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         if (this.standardLighting != null)
         {
             this.standardLighting.beginLighting(this);
-            this.getGL().glEnable(GL.GL_LIGHTING);
+            this.getGL().glEnable(GLLightingFunc.GL_LIGHTING);
         }
     }
 

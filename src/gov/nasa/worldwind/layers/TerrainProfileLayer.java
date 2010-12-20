@@ -6,21 +6,42 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.layers;
 
-import com.sun.opengl.util.j2d.TextRenderer;
-import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.event.*;
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.event.PositionEvent;
+import gov.nasa.worldwind.event.PositionListener;
+import gov.nasa.worldwind.event.SelectEvent;
+import gov.nasa.worldwind.event.SelectListener;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Intersection;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.pick.PickSupport;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.render.Polyline;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLTextRenderer;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 
-import javax.media.opengl.GL;
-import java.awt.*;
-import java.awt.geom.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.fixedfunc.GLMatrixFunc;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  * Displays a terrain profile graph in a screen corner. <p/> <p> Usage: do setEventSource(wwd) to have the graph
@@ -816,7 +837,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
         if (this.positions == null || (this.minElevation == 0 && this.maxElevation == 0))
             return;
 
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
 
         boolean attribsPushed = false;
         boolean modelviewPushed = false;
@@ -826,11 +847,11 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
         {
             gl.glPushAttrib(GL.GL_DEPTH_BUFFER_BIT
                 | GL.GL_COLOR_BUFFER_BIT
-                | GL.GL_ENABLE_BIT
-                | GL.GL_TEXTURE_BIT
-                | GL.GL_TRANSFORM_BIT
-                | GL.GL_VIEWPORT_BIT
-                | GL.GL_CURRENT_BIT);
+                | GL2.GL_ENABLE_BIT
+                | GL2.GL_TEXTURE_BIT
+                | GL2.GL_TRANSFORM_BIT
+                | GL2.GL_VIEWPORT_BIT
+                | GL2.GL_CURRENT_BIT);
             attribsPushed = true;
 
             gl.glDisable(GL.GL_TEXTURE_2D);        // no textures
@@ -848,14 +869,14 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
 
             // Load a parallel projection with xy dimensions (viewportWidth, viewportHeight)
             // into the GL projection matrix.
-            gl.glMatrixMode(javax.media.opengl.GL.GL_PROJECTION);
+            gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
             gl.glPushMatrix();
             projectionPushed = true;
             gl.glLoadIdentity();
             double maxwh = width > height ? width : height;
             gl.glOrtho(0d, viewport.width, 0d, viewport.height, -0.6 * maxwh, 0.6 * maxwh);
 
-            gl.glMatrixMode(GL.GL_MODELVIEW);
+            gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
             gl.glPushMatrix();
             modelviewPushed = true;
             gl.glLoadIdentity();
@@ -918,7 +939,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                     // Add graph to the pickable list for 'un-minimize' click
                     this.pickSupport.addPickableObject(colorCode, this);
                     gl.glColor3ub((byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue());
-                    gl.glBegin(GL.GL_POLYGON);
+                    gl.glBegin(GL2.GL_POLYGON);
                     gl.glVertex3d(0, 0, 0);
                     gl.glVertex3d(width, 0, 0);
                     gl.glVertex3d(width, height, 0);
@@ -939,12 +960,12 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
         {
             if (projectionPushed)
             {
-                gl.glMatrixMode(GL.GL_PROJECTION);
+                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
                 gl.glPopMatrix();
             }
             if (modelviewPushed)
             {
-                gl.glMatrixMode(GL.GL_MODELVIEW);
+                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glPopMatrix();
             }
             if (attribsPushed)
@@ -972,7 +993,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
 
     private void drawGraph(DrawContext dc, Dimension dimension)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         // Adjust min/max elevation for the graph
         double min = this.minElevation;
         double max = this.maxElevation;
@@ -1112,7 +1133,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
 
     private void drawGUI(DrawContext dc, Dimension dimension)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         int buttonSize = 16;
         int hs = buttonSize / 2;
         int buttonBorder = 4;
@@ -1181,11 +1202,11 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
 
     private void drawFilledRectangle(DrawContext dc, Vec4 origin, Dimension dimension, Color color)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glColor4ub((byte) color.getRed(), (byte) color.getGreen(),
             (byte) color.getBlue(), (byte) color.getAlpha());
         gl.glDisable(GL.GL_TEXTURE_2D);        // no textures
-        gl.glBegin(GL.GL_POLYGON);
+        gl.glBegin(GL2.GL_POLYGON);
         gl.glVertex3d(origin.x, origin.y, 0);
         gl.glVertex3d(origin.x + dimension.getWidth(), origin.y, 0);
         gl.glVertex3d(origin.x + dimension.getWidth(), origin.y + dimension.getHeight(), 0);
@@ -1196,7 +1217,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
 
     private void drawLine(DrawContext dc, double x1, double y1, double x2, double y2)
     {
-        GL gl = dc.getGL();
+        GL2 gl = dc.getGL();
         gl.glBegin(GL.GL_LINE_STRIP);
         gl.glVertex3d(x1, y1, 0);
         gl.glVertex3d(x2, y2, 0);

@@ -7,20 +7,28 @@
 
 package gov.nasa.worldwind.util.webview;
 
-import com.sun.opengl.util.texture.Texture;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVListImpl;
-import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.BasicWWTexture;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.WWTexture;
 import gov.nasa.worldwind.util.Logging;
 
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicLong;
+
+import javax.swing.event.HyperlinkListener;
+
+import com.jogamp.opengl.util.texture.Texture;
 
 /**
  * @author pabercrombie

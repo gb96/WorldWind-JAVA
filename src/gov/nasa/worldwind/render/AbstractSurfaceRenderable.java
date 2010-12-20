@@ -6,15 +6,21 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.SurfaceTileDrawContext;
+import gov.nasa.worldwind.util.WWMath;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 
-import javax.media.opengl.GL;
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.media.opengl.GL2;
 
 /**
  * Surface renderable.
@@ -151,7 +157,7 @@ public abstract class AbstractSurfaceRenderable extends AbstractSurfaceObject
         return 0;
     }
 
-    protected void applyPremultipliedAlphaColor(GL gl, Color color, double opacity)
+    protected void applyPremultipliedAlphaColor(GL2 gl, Color color, double opacity)
     {
         float[] compArray = new float[4];
         color.getRGBComponents(compArray);
@@ -162,7 +168,7 @@ public abstract class AbstractSurfaceRenderable extends AbstractSurfaceObject
         gl.glColor4fv(compArray, 0);
     }
 
-    protected void applyNonPremultipliedAlphaColor(GL gl, Color color, double opacity)
+    protected void applyNonPremultipliedAlphaColor(GL2 gl, Color color, double opacity)
     {
         float[] compArray = new float[4];
         color.getRGBComponents(compArray);

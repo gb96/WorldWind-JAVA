@@ -5,15 +5,19 @@ All Rights Reserved.
 */
 package gov.nasa.worldwind.render.airspaces;
 
-import com.sun.opengl.util.BufferUtil;
 import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.cache.Cacheable;
 
-import javax.media.opengl.GL;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2ES2;
+import javax.media.opengl.GL2GL3;
+
+import com.jogamp.common.nio.Buffers;
 
 /**
  * @author dcollins
@@ -142,7 +146,7 @@ public class Geometry extends AVListImpl implements Cacheable
             || this.buffer[type].capacity() < numCoords
             || !(this.buffer[type] instanceof IntBuffer))
         {
-            this.buffer[type] = BufferUtil.newIntBuffer(numCoords);
+            this.buffer[type] = Buffers.newDirectIntBuffer(numCoords);
         }
 
         this.bufferCopy(src, srcPos, (IntBuffer) this.buffer[type], 0, numCoords);
@@ -160,7 +164,7 @@ public class Geometry extends AVListImpl implements Cacheable
             || this.buffer[type].capacity() < numCoords
             || !(this.buffer[type] instanceof FloatBuffer))
         {
-            this.buffer[type] = BufferUtil.newFloatBuffer(numCoords);
+            this.buffer[type] = Buffers.newDirectFloatBuffer(numCoords);
         }
 
         this.bufferCopy(src, srcPos, (FloatBuffer) this.buffer[type], 0, numCoords);
@@ -217,12 +221,12 @@ public class Geometry extends AVListImpl implements Cacheable
         case GL.GL_UNSIGNED_SHORT:
             size = 2L;
             break;
-        case GL.GL_INT:
+        case GL2ES2.GL_INT:
         case GL.GL_UNSIGNED_INT:
         case GL.GL_FLOAT:
             size = 4L;
             break;
-        case GL.GL_DOUBLE:
+        case GL2GL3.GL_DOUBLE:
             size = 8L;
             break;
         }
